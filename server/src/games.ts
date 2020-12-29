@@ -50,13 +50,20 @@ const joinGame = async (gameCode: string, player: Player) => {
   }
 
   logger.log(`${player.name} joining game ${gameCode}`);
-  gameState.joinGame(player);
+  await gameState.joinGame(player);
 
   return gameState;
+}
+
+const destroyGame = async (gameCode: string) => {
+  logger.log(`Destroying game ${gameCode}`);
+
+  games[gameCode] = undefined;
 }
 
 
 export const gameManager = {
   createNewGame,
-  joinGame
+  joinGame,
+  destroyGame
 }

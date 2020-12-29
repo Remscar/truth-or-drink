@@ -56,6 +56,7 @@ export const GameStateContextProvider: React.FC = (props) => {
 
       const host = window.location.origin;
       const gameSocket = openSocket(host, { path: "/socket" });
+
       gameSocket.on("connect", () => {
         logger.log("client connected");
       });
@@ -64,9 +65,10 @@ export const GameStateContextProvider: React.FC = (props) => {
         logger.log(`Received full state for ${data.gameCode}`);
 
         if (data.gameCode !== gameState.gameCode) {
-          logger.error(`Received a game state for a game we aren't in? ${gameState.gameCode} vs received ${data.gameCode}`);
-          return;
+          logger.warn(`Received a game state for a game we aren't in? ${gameState.gameCode} vs received ${data.gameCode}`);
         }
+
+        logger.log(data);
 
         setGameState({
           gameCode: data.gameCode,
