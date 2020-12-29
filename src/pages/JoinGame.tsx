@@ -25,10 +25,23 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
   }, [playerDataInput.name]);
 
   const onJoinGame = async () => {
-    logger.log(`Player ${playerDataInput.name} wants to join game ${gameCodeInput.code}`);
-    
-    await gameState.joinGame(playerDataInput.playerInfo, gameCodeInput.code);
-    
+    logger.log(
+      `Player ${playerDataInput.name} wants to join game ${gameCodeInput.code}`
+    );
+
+    setJoiningGame(true);
+    const res = await gameState.joinGame(
+      playerDataInput.playerInfo,
+      gameCodeInput.code
+    );
+    setJoiningGame(false);
+
+    logger.log(res);
+
+    if (res.error) {
+      setJoinError(true);
+      setJoinErrorMessage(res.error);
+    }
   };
 
   return (
@@ -49,9 +62,17 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
             Join Game
           </StyledButton>
         </Grid>
-        <Grid item>
-          {joiningGame ? <Typography>Joining Game...</Typography> : null}
-        </Grid>
+        {joiningGame ? (
+          <Grid item>
+            <Typography>Joining Game...</Typography>
+          </Grid>
+        ) : null}
+        {joinError ? (
+          <Grid item>
+            <Typography>{`Error Joining Game: ${joinErrorMessage}`}</Typography>
+          </Grid>
+        ) : null}
+
 
         <Grid item>
           <StyledButton href="/" color="gray">

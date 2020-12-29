@@ -1,8 +1,8 @@
 import React from "react";
-import { getLogger, Maybe, Socket } from "../util";
+import { CouldError, getLogger, Maybe, Socket } from "../util";
 
 import openSocket from "socket.io-client";
-import { CreatedDto, CreateDto, JoinDto, PlayerInfo } from "../shared";
+import { CreatedDto, CreateDto, JoinDto, JoinedDto, PlayerInfo } from "../shared";
 
 export * from "./useGameStateHelpers";
 
@@ -18,7 +18,7 @@ export interface GameStateContext {
   awaitingResponse: boolean;
   rawSocket: Socket;
   createGame: (player: PlayerInfo) => Promise<string>;
-  joinGame: (player: PlayerInfo, gameCode: string) => Promise<boolean>;
+  joinGame: (player: PlayerInfo, gameCode: string) => Promise<CouldError<boolean>>;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -75,11 +75,23 @@ export const GameStateContextProvider: React.FC = (props) => {
     socket.emit('join', dto);
 
 
-    return new Promise<string>((resolve) => {
-      
-    })
+    return new Promise<CouldError<boolean>>((resolve) => {
+      socket.once('joined', (data: JoinedDto) => {
+        logger.log(`Was ${data.success ? null : 'not'} successful joining ${gameCode}`);
 
-    return true;
+        if (data.success) {
+          setGameState({
+            gameCode,
+            started: false,
+          });
+        }
+
+        resolve({
+          value: data.success,
+          error: data.error
+        });
+      });
+    });
   };
 
   const createGame = async (player: PlayerInfo) => {

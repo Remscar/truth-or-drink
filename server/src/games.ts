@@ -56,7 +56,7 @@ const joinGame = async (gameCode: string, player: Player) => {
 }
 
 
-export const GameManager = {
+export const gameManager = {
   createNewGame,
   joinGame
 }
