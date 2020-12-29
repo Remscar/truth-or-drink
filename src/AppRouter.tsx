@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme) => ({
     // letterSpacing: "0.5px",
     // textAlign: "left",
     paddingTop: "50px",
+    display: "flex",
+    minHeight: "100vh",
+    flexDirection: "column"
   },
 }));
 
@@ -22,8 +25,8 @@ export const AppRouter: React.FC = (props) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
-      <Container maxWidth="md">
+    <div >
+      <Container maxWidth="md" className={classes.root}>
         <BrowserRouter>
           <Switch>
             <Route exact={true} path="/" component={Home} />
