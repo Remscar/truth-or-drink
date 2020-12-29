@@ -1,5 +1,6 @@
 import { Container, Grid, Typography } from "@material-ui/core";
 import * as React from "react";
+import { Redirect } from "react-router-dom";
 import { StyledButton } from "../components/button";
 import { useDataPlayerInput } from "../components/useDataPlayerInput";
 import { useGameCodeInput } from "../components/useGameCodeInput";
@@ -19,6 +20,7 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
   const [joiningGame, setJoiningGame] = React.useState(false);
   const [joinError, setJoinError] = React.useState(false);
   const [joinErrorMessage, setJoinErrorMessage] = React.useState("");
+  const [sendToGameRoom, setSendToGameRoom] = React.useState(false);
 
   React.useEffect(() => {
     setJoinButtonEnabled(playerDataInput.isValid);
@@ -41,11 +43,14 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
     if (res.error) {
       setJoinError(true);
       setJoinErrorMessage(res.error);
+    } else {
+      setSendToGameRoom(true);
     }
   };
 
   return (
     <React.Fragment>
+      {sendToGameRoom ? <Redirect to={"/game"} /> : null}
       <Grid container direction="column" spacing={2}>
         <Grid item>
           <Typography variant="h3">Join Game</Typography>
@@ -72,7 +77,6 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
             <Typography>{`Error Joining Game: ${joinErrorMessage}`}</Typography>
           </Grid>
         ) : null}
-
 
         <Grid item>
           <StyledButton href="/" color="gray">
