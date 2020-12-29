@@ -29,22 +29,6 @@ export const NewGame: React.FC<Props> = (props: Props) => {
     setCreatingGame(true);
     await gameState.createGame(playerDataInput.playerInfo);
     setCreatingGame(false);
-
-    // const res =  await fetch("/create", {
-    //   method: 'POST'
-    // });
-
-    // if (res.status !== 200) {
-    //   logger.error('Failed to make game.');
-    //   logger.debug(res);
-    //   setCreatingGame(false);
-    //   return;
-    // }
-
-    // const newGameId = (await res.json()).id;
-
-    // logger.log(`Created a new game with id ${newGameId}`);
-    // gameState.joinedGame(newGameId);
   };
 
   return (

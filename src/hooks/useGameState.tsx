@@ -4,14 +4,21 @@ import { getLogger, Maybe, Socket } from "../util";
 import openSocket from "socket.io-client";
 import { CreatedDto, CreateDto, PlayerInfo } from "../shared";
 
+export * from "./useGameStateHelpers";
+
 const logger = getLogger("hooks:useGameState");
 
+export interface GameState {
+  gameCode: string;
+  started: boolean;
+}
+
 export interface GameStateContext {
-  gameId: string;
+  state: Maybe<GameState>;
   awaitingResponse: boolean;
   rawSocket: Socket;
   createGame: (player: PlayerInfo) => Promise<string>;
-  joinGame: (player: PlayerInfo, gameId: string) => Promise<boolean>;
+  joinGame: (player: PlayerInfo, gameCode: string) => Promise<boolean>;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -30,14 +37,15 @@ export const useRawGameState = () => {
 };
 
 export const GameStateContextProvider: React.FC = (props) => {
-  const [rawSocket, setSocket] = React.useState<Socket>(null as unknown as Socket);
-  const [gameId, setGameId] = React.useState("");
+  const [rawSocket, setSocket] = React.useState<Socket>(
+    (null as unknown) as Socket
+  );
+  const [gameState, setGameState] = React.useState<Maybe<GameState>>(null);
   const [awaitingResponse, setAwaitingResponse] = React.useState(false);
 
   React.useEffect(() => {
     if (!rawSocket) {
       logger.log(`Creating socket connection`);
-    
 
       const host = window.location.origin;
       const gameSocket = openSocket(host, { path: "/socket" });
@@ -55,10 +63,10 @@ export const GameStateContextProvider: React.FC = (props) => {
     }
 
     return rawSocket;
-  }
+  };
 
-  const joinGame = async (player: PlayerInfo, gameId: string) => {
-    logger.log(`User ${player.name} has joined game ${gameId}`);
+  const joinGame = async (player: PlayerInfo, gameCode: string) => {
+    logger.log(`User ${player.name} has joined game ${gameCode}`);
     //setGameId(gameId);
 
     return true;
@@ -69,41 +77,43 @@ export const GameStateContextProvider: React.FC = (props) => {
 
     const socket = await getSocket();
     const dto: CreateDto = {
-      creator: player
+      creator: player,
     };
-    socket.emit('create', dto);
+    socket.emit("create", dto);
 
     setAwaitingResponse(true);
 
     return new Promise<string>((resolve) => {
-      socket.once('created', (data: CreatedDto) => {
+      socket.once("created", (data: CreatedDto) => {
         setAwaitingResponse(false);
 
         logger.log(`Server created our game with code: ${data.gameCode}`);
-        setGameId(gameId);
+        setGameState({
+          gameCode: data.gameCode,
+          started: false,
+        });
 
-        resolve(gameId);
+        resolve(data.gameCode);
       });
     });
-  }
+  };
 
   let contextValue: Maybe<GameStateContext> = null;
 
   const memoValue = React.useMemo(
     () => ({
       awaitingResponse,
-      gameId,
+      state: gameState,
       rawSocket,
       joinGame,
-      createGame
+      createGame,
     }),
-    [rawSocket, gameId]
+    [rawSocket, gameState]
   );
 
   if (rawSocket) {
     contextValue = memoValue;
   }
-  
 
   return (
     <gameStateContext.Provider value={contextValue}>
@@ -112,13 +122,3 @@ export const GameStateContextProvider: React.FC = (props) => {
   );
 };
 
-
-export const WaitForGameState: React.FC = props => {
-  const gameState = useRawGameState();
-
-  if (!gameState) {
-    return (<React.Fragment></React.Fragment>)
-  } else {
-    return (<React.Fragment>{props.children}</React.Fragment>)
-  }
-}
