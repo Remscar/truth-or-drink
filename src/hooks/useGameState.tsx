@@ -1,7 +1,6 @@
 import React from "react";
-import { CouldError, getLogger, Maybe, Socket } from "../util";
+import { CouldError, getLogger, Maybe } from "../util";
 
-import openSocket from "socket.io-client";
 import {
   CompleteGameStateDto,
   CreatedDto,
@@ -10,6 +9,7 @@ import {
   JoinedDto,
   PlayerInfo,
 } from "../shared";
+import { useSocket } from "./useSocket";
 
 export * from "./useGameStateHelpers";
 
@@ -25,7 +25,6 @@ export interface GameState {
 export interface GameStateContext {
   currentGame: Maybe<GameState>;
   playerInfo: Maybe<PlayerInfo>;
-  rawSocket: Socket;
   createGame: (player: PlayerInfo) => Promise<string>;
   joinGame: (
     player: PlayerInfo,
@@ -57,56 +56,38 @@ export const useRawGameState = () => {
 };
 
 export const GameStateContextProvider: React.FC = (props) => {
-  const [rawSocket, setSocket] = React.useState<Socket>(
-    (null as unknown) as Socket
-  );
+  const gameSocket = useSocket();
   const [currentGameState, setCurrentGameState] = React.useState<Maybe<GameState>>(null);
   const [playerInfo, setPlayerInfo] = React.useState<Maybe<PlayerInfo>>(null);
 
 
-  React.useEffect(() => {
-    if (!rawSocket) {
-      logger.log(`Creating socket connection`);
+  gameSocket.on("connect", () => {
+    logger.log("client connected");
+  });
 
-      const host = window.location.origin;
-      const gameSocket = openSocket(host, { path: "/socket" });
+  gameSocket.on("completeGameState", (data: CompleteGameStateDto) => {
+    console.log(currentGameState);
 
-      gameSocket.on("connect", () => {
-        logger.log("client connected");
-      });
+    logger.log(`Received full state for ${data.gameCode}`);
 
-      gameSocket.on("completeGameState", (data: CompleteGameStateDto) => {
-        console.log(currentGameState);
-
-        logger.log(`Received full state for ${data.gameCode}`);
-
-        if (currentGameState && data.gameCode !== currentGameState.gameCode) {
-          logger.warn(
-            `Received a game state for a game we aren't in? ${currentGameState.gameCode} vs received ${data.gameCode}`
-          );
-        }
-
-        logger.log(data);
-
-        setCurrentGameState({
-          gameCode: data.gameCode,
-          started: data.started,
-          players: data.players,
-          isOwner: data.owner === gameSocket.id,
-        });
-      });
-
-      setSocket(gameSocket);
+    if (currentGameState && data.gameCode !== currentGameState.gameCode) {
+      logger.warn(
+        `Received a game state for a game we aren't in? ${currentGameState.gameCode} vs received ${data.gameCode}`
+      );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawSocket]);
+
+    logger.log(data);
+
+    setCurrentGameState({
+      gameCode: data.gameCode,
+      started: data.started,
+      players: data.players,
+      isOwner: data.owner === gameSocket.id,
+    });
+  });
 
   const getSocket = async () => {
-    if (!rawSocket) {
-      throw Error(`Socket not ready.`);
-    }
-
-    return rawSocket;
+    return gameSocket;
   };
 
   const joinGame = async (player: PlayerInfo, gameCode: string) => {
@@ -167,23 +148,20 @@ export const GameStateContextProvider: React.FC = (props) => {
     });
   };
 
-  let contextValue: Maybe<GameStateContext> = null;
-
+  
   const memoValue = React.useMemo(
     () => ({
       currentGame: currentGameState,
       playerInfo: playerInfo,
-      rawSocket,
       joinGame,
       createGame,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rawSocket, currentGameState]
+    [currentGameState]
   );
 
-  if (rawSocket) {
-    contextValue = memoValue;
-  }
+  let contextValue: Maybe<GameStateContext> = memoValue;
+
 
   return (
     <gameStateContext.Provider value={contextValue}>
