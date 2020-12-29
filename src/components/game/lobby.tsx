@@ -1,16 +1,17 @@
 import { Grid, Typography } from "@material-ui/core";
 import React from "react";
 import { useStartedGameState } from "../../hooks/useGameState";
+import { PlayerInfo } from "../../shared";
 import { StyledButton } from "../button";
 
 export const GameLobby: React.FC = (props) => {
   const gameState = useStartedGameState();
 
-  if (gameState.state.started) {
+  if (!gameState.currentGame || gameState.currentGame.started) {
     return null;
   }
 
-  console.log(gameState.state);
+  console.log(gameState.currentGame);
 
   return (
     <React.Fragment>
@@ -22,20 +23,27 @@ export const GameLobby: React.FC = (props) => {
         </Grid>
         <Grid item>
           <Typography variant="h4" align="center">
-            {gameState.state.gameCode}
+            {gameState.currentGame.gameCode}
           </Typography>
         </Grid>
         <Grid item container direction="column" xs={12}>
           <Grid item>
-            <Typography align="center">Names</Typography>
+            <Typography align="center">Players:</Typography>
           </Grid>
+          {gameState.currentGame.players.map((p: PlayerInfo) => (
+            <Grid item key={p.name}>
+              <Typography align="center">{p.name}</Typography>
+            </Grid>
+          ))}
         </Grid>
         <Grid item container direction="row" justify="space-around">
           <Grid item>
             <StyledButton color="red">Start Game</StyledButton>
           </Grid>
           <Grid item>
-            <StyledButton color="gray">Leave</StyledButton>
+            <StyledButton color="gray" href="/">
+              Leave
+            </StyledButton>
           </Grid>
         </Grid>
       </Grid>

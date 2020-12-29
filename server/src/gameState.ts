@@ -19,6 +19,11 @@ export interface GameState {
 export const createGameState = (code: string, owner: Player) => {
   const players: Player[] = [];
   let started = false;
+  const ownerName = owner.name;
+
+  const getOwner = () => {
+    return players.find(e => e.name == ownerName);
+  }
 
   const joinGame = async (player: Player) => {
     const joinedRooms = Array.from(player.socket.rooms.values());
@@ -32,6 +37,8 @@ export const createGameState = (code: string, owner: Player) => {
 
     if (existingSocketIndex >= 0) {
       logger.debug(`Player with socket ${player.socket.id} was already in the game.`);
+      const existingPlayer = players[existingSocketIndex];
+      existingPlayer.name = player.name;
     } else if (existingNameIndex >= 0) {
       logger.debug(`Player with name ${player.name} was already in name.`);
       const existingPlayer = players[existingNameIndex];
@@ -55,6 +62,7 @@ export const createGameState = (code: string, owner: Player) => {
     const dto: CompleteGameStateDto = {
       gameCode: code,
       started: started,
+      owner: getOwner().socket.id,
       players: players.map(e => ({name: e.name}))
     }
     logger.debug(`Sending game state to all players in ${code}`);

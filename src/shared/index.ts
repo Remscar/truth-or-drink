@@ -25,6 +25,7 @@ export interface JoinedDto extends Dto {
 
 export interface CompleteGameStateDto extends Dto {
   gameCode: string;
+  owner: string;
   started: boolean;
   players: PlayerInfo[];
 }

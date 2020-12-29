@@ -15,7 +15,7 @@ export const WaitForGameState: React.FC = props => {
 export const RequireGameState: React.FC = props => {
   const gameState = useRawGameState();
 
-  if (!gameState || !gameState.state) {
+  if (!gameState || !gameState.currentGame) {
     return (<React.Fragment>
       <Redirect to={"/"} />
     </React.Fragment>)
@@ -33,7 +33,7 @@ export const CreateGameIfNotInOne: React.FC = props => {
       return;
     }
 
-    if (!gameState.state.gameCode) {
+    if (!gameState.currentGame) {
       gameState.createGame({name: "Zachary Test"});
     }
   }, [gameState]);
@@ -42,7 +42,7 @@ export const CreateGameIfNotInOne: React.FC = props => {
     return (<React.Fragment></React.Fragment>)
   }
 
-  if (!gameState.state) {
+  if (!gameState.currentGame) {
     return (<React.Fragment></React.Fragment>)
   }
 
