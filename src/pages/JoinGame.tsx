@@ -1,4 +1,4 @@
-import { Container, Grid, Typography } from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import * as React from "react";
 import { Redirect } from "react-router-dom";
 import { StyledButton } from "../components/button";
@@ -24,7 +24,7 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
 
   React.useEffect(() => {
     setJoinButtonEnabled(playerDataInput.isValid);
-  }, [playerDataInput.name]);
+  }, [playerDataInput]);
 
   const onJoinGame = async () => {
     logger.log(

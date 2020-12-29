@@ -58,7 +58,7 @@ export const useDataPlayerInput = (): PlayerInput => {
         name
       } as PlayerInfo
     }
-  }, [nameError, name]);
+  }, [nameError, name, playerInputComponent]);
 
   return dataMemo;
 };

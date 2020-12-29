@@ -22,17 +22,17 @@ export const AppRouter: React.FC = (props) => {
   const classes = useStyles();
 
   return (
-    <BrowserRouter>
-      <div className={classes.root}>
-        <Switch>
-          <Container maxWidth="md">
+    <div className={classes.root}>
+      <Container maxWidth="md">
+        <BrowserRouter>
+          <Switch>
             <Route exact={true} path="/" component={Home} />
             <Route exact={true} path="/new" component={NewGame} />
             <Route exact={true} path="/join" component={JoinGame} />
             <Route exact={true} path="/game" component={GameRoom} />
-          </Container>
-        </Switch>
-      </div>
-    </BrowserRouter>
+          </Switch>
+        </BrowserRouter>
+      </Container>
+    </div>
   );
 };

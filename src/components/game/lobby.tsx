@@ -1,18 +1,28 @@
-import React from "react"
-import { GameStateContext } from "../../hooks/useGameState"
+import { Grid, Typography } from "@material-ui/core";
+import React from "react";
+import { useStartedGameState } from "../../hooks/useGameState";
 
+export const GameLobby: React.FC = (props) => {
+  const gameState = useStartedGameState();
 
-interface Props {
-  gameState: GameStateContext;
-}
+  if (gameState.state.started) {
+    return null;
+  }
 
-export const GameLobby: React.FC<Props> = props => {
+  console.log(gameState.state);
 
-
-
-
-  return (<React.Fragment>
-    
-    
-  </React.Fragment>)
-}
+  return (
+    <React.Fragment>
+      <Grid container direction="column" spacing={2}>
+        <Grid item>
+          <Typography variant="h3" align="center">
+            Lobby
+          </Typography>
+          <Typography variant="h4" align="center">
+            {gameState.state.gameCode}
+          </Typography>
+        </Grid>
+      </Grid>
+    </React.Fragment>
+  );
+};

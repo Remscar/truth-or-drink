@@ -1,6 +1,6 @@
 import React from 'react';
 import { ButtonBaseProps, makeStyles } from '@material-ui/core';
-import Button, { ButtonProps } from '@material-ui/core/Button';
+import Button from '@material-ui/core/Button';
 import { Link as RouterLink } from 'react-router-dom'
 
 // const styles = {

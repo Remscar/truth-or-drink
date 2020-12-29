@@ -1,13 +1,12 @@
-import { Container, Grid, Typography } from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import * as React from "react";
 import { Redirect } from "react-router-dom";
 import { StyledButton } from "../components/button";
 import {
-  PlayerInput,
   useDataPlayerInput,
 } from "../components/useDataPlayerInput";
 import { useGameState } from "../hooks/useGameState";
-import { getLogger, Maybe } from "../util";
+import { getLogger } from "../util";
 
 interface Props {}
 
@@ -24,7 +23,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
 
   React.useEffect(() => {
     setCreateButtonEnabled(playerDataInput.isValid);
-  }, [playerDataInput.name]);
+  }, [playerDataInput]);
 
   const onCreateGame = async () => {
     logger.log("Creating game");

@@ -33,7 +33,7 @@ export const CreateGameIfNotInOne: React.FC = props => {
       return;
     }
 
-    if (!gameState.state) {
+    if (!gameState.state.gameCode) {
       gameState.createGame({name: "Zachary Test"});
     }
   }, [gameState]);

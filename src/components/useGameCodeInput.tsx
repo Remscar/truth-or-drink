@@ -53,7 +53,7 @@ export const useGameCodeInput = (): GameCodeInput => {
       component: gameCodeInputComponent,
       code,
     }
-  }, [codeError, code]);
+  }, [codeError, code, gameCodeInputComponent]);
 
   return dataMemo;
 };
