@@ -54,7 +54,7 @@ const getBackgroundColor = (props: ButtonBaseProps) => {
     return null;
   }
 
-  return backgroundColors[props.color];
+  return props?.color ? backgroundColors[props.color] : undefined;
 }
 
 const getBoxShadow = (props: ButtonBaseProps) => {
@@ -62,7 +62,7 @@ const getBoxShadow = (props: ButtonBaseProps) => {
     return null;
   }
 
-  return boxShadow[props.color];
+  return props?.color ? boxShadow[props.color] : undefined;
 }
 
 const useStyles = makeStyles(theme => ({

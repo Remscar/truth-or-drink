@@ -1,10 +1,12 @@
 import { Grid, TextField } from "@material-ui/core";
 import React from "react";
+import { PlayerInfo } from "../shared";
 
 export interface PlayerInput {
   isValid: boolean;
   component: React.ReactFragment;
   name: string;
+  playerInfo: PlayerInfo;
 }
 
 const maxNameLength = 32;
@@ -52,6 +54,9 @@ export const useDataPlayerInput = (): PlayerInput => {
       isValid: !nameError && name.length > 0,
       component: playerInputComponent,
       name,
+      playerInfo: {
+        name
+      } as PlayerInfo
     }
   }, [nameError, name]);
 

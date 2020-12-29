@@ -1,11 +1,18 @@
 import express from 'express';
 import * as path from 'path';
+import { Socket, Server as SocketServer } from 'socket.io';
+import * as http from 'http';
+import { getLogger } from './util';
+import { registerNewClientConnection } from './src';
 
 const app = express();
 const port = process.env.PORT || 5000;
+const server = http.createServer(app);
+
+const logger = getLogger("server");
 
 // console.log that your server is up and running
-app.listen(port, () => console.log(`Listening on port ${port}`));
+server.listen(port, () => console.log(`Listening on port ${port}`));
 
 app.use(express.static(path.join(__dirname, 'build')))
 
@@ -24,4 +31,14 @@ app.post('/create', (req, res) => {
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'))
-})
+});
+
+const socketServer = new SocketServer({
+  path: '/socket'
+});
+socketServer.listen(server);
+socketServer.on('connection', (socket: Socket) => {
+  logger.log(`new socket connection`);
+  registerNewClientConnection(socket);
+});
+socketServer.of('')

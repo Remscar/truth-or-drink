@@ -3,14 +3,17 @@ import { ThemeProvider } from "@material-ui/styles";
 import React from "react";
 import { AppRouter } from "./AppRouter";
 import { GlobalProviders } from "./GlobalProviders";
+import { WaitForGameState } from "./hooks/useGameState";
 
 function App() {
   return (
-      <CssBaseline>
-        <GlobalProviders>
+    <CssBaseline>
+      <GlobalProviders>
+        <WaitForGameState>
           <AppRouter />
-        </GlobalProviders>
-      </CssBaseline>
+        </WaitForGameState>
+      </GlobalProviders>
+    </CssBaseline>
   );
 }
 
