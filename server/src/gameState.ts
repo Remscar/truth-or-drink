@@ -14,6 +14,7 @@ export interface GameState {
   joinGame: (player: Player) => Promise<boolean>
   sendGameState: () => void;
   playerDisconnected: (player: Player) => Promise<void>;
+  removePlayerFromGame: (player: Player) => Promise<void>;
 }
 
 export const createGameState = (code: string, owner: Player) => {
@@ -80,6 +81,16 @@ export const createGameState = (code: string, owner: Player) => {
     }
   }
 
+  const removePlayerFromGame = async (player: Player) => {
+    const index = players.findIndex(e => e.name === player.name);
+    if (index < 0) {
+      logger.log(`Tried to remove player ${player.name} from ${code} but they aren't there`);
+      return;
+    }
+
+    players.splice(index, 1);
+  }
+
   const newGameState: GameState = {
     code,
     owner,
@@ -87,7 +98,8 @@ export const createGameState = (code: string, owner: Player) => {
     started,
     joinGame,
     sendGameState,
-    playerDisconnected
+    playerDisconnected,
+    removePlayerFromGame,
   }
 
   return newGameState;
