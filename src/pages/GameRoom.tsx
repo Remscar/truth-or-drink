@@ -1,6 +1,6 @@
 import * as React from "react";
-import { GameLobby } from "../components/game";
-import { CreateGameIfNotInOne } from "../hooks/useGameState";
+import { Game } from "../components/game";
+import { CreateGameIfNotInOne, useGameState} from "../hooks/useGameState";
 
 interface Props {}
 
@@ -8,10 +8,14 @@ interface Props {}
 
 export const GameRoom: React.FC<Props> = (props: Props) => {
 
+  const gameState = useGameState();
+  //const currentGame = useCurrentGameState();
+
+  const showLobby = !gameState.currentGame?.started;
+
   return (
     <CreateGameIfNotInOne>
-      <GameLobby />
-      
+      <Game/>
     </CreateGameIfNotInOne>
   );
 };

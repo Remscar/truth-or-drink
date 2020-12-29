@@ -8,19 +8,20 @@ const logger = getLogger("gameState");
 
 export interface GameState {
   code: string;
-  owner: Player;
+  getOwner: () => Player;
   players: Player[];
   started: boolean;
   joinGame: (player: Player) => Promise<boolean>
   sendGameState: () => void;
   playerDisconnected: (player: Player) => Promise<void>;
   removePlayerFromGame: (player: Player) => Promise<void>;
+  startGame: () => Promise<void>;
 }
 
-export const createGameState = (code: string, owner: Player) => {
+export const createGameState = (code: string, originalOwner: Player) => {
   const players: Player[] = [];
   let started = false;
-  const ownerName = owner.name;
+  let ownerName = originalOwner.name;
 
   const getOwner = () => {
     return players.find(e => e.name == ownerName);
@@ -91,15 +92,21 @@ export const createGameState = (code: string, owner: Player) => {
     players.splice(index, 1);
   }
 
+  const startGame = async () => {
+    logger.log(`Game ${code} is starting...`);
+    started = true;
+  }
+
   const newGameState: GameState = {
     code,
-    owner,
+    getOwner,
     players,
     started,
     joinGame,
     sendGameState,
     playerDisconnected,
     removePlayerFromGame,
+    startGame
   }
 
   return newGameState;

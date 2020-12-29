@@ -32,6 +32,7 @@ export interface GameStateContext {
     gameCode: string
   ) => Promise<CouldError<boolean>>;
   leaveGame: () => Promise<void>;
+  startGame: () => void;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -64,21 +65,19 @@ export const GameStateContextProvider: React.FC = (props) => {
 
 
   gameSocket.on("connect", () => {
-    logger.log("client connected");
+    logger.debug("client connected");
   });
 
   gameSocket.on("completeGameState", (data: CompleteGameStateDto) => {
-    console.log(currentGameState);
 
     logger.log(`Received full state for ${data.gameCode}`);
+    logger.debug(data);
 
     if (currentGameState && data.gameCode !== currentGameState.gameCode) {
       logger.warn(
         `Received a game state for a game we aren't in? ${currentGameState.gameCode} vs received ${data.gameCode}`
       );
     }
-
-    logger.log(data);
 
     setCurrentGameState({
       gameCode: data.gameCode,
@@ -162,6 +161,15 @@ export const GameStateContextProvider: React.FC = (props) => {
     setCurrentGameState(null);
   }
 
+  const startGame = async () => {
+    if (!currentGameState || !playerInfo) {
+      return;
+    }
+
+    const socket = await getSocket();
+    socket.emit('startGame');
+  }
+
   
   const memoValue = React.useMemo(
     () => ({
@@ -169,7 +177,8 @@ export const GameStateContextProvider: React.FC = (props) => {
       playerInfo: playerInfo,
       joinGame,
       createGame,
-      leaveGame
+      leaveGame,
+      startGame
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentGameState]

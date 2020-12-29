@@ -83,6 +83,21 @@ export const registerNewClientConnection = (socket: Socket) => {
     player = null;
   });
 
+  socket.on('startGame', async () => {
+    if (!player || !game) {
+      return;
+    }
+
+    if (game.getOwner().socket.id !== player.socket.id) {
+      logger.warn(`${player.name} just is starting the game that they aren't the owner of.`);
+      return;
+    }
+
+    await game.startGame();
+
+    game.sendGameState();
+  })
+
 
 }
 

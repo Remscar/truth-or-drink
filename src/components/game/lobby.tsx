@@ -1,13 +1,22 @@
 import { Grid, Typography } from "@material-ui/core";
 import React from "react";
-import { useCurrentGameState } from "../../hooks/useGameState";
+import { useCurrentGameState, useGameState } from "../../hooks/useGameState";
 import { useLeaveGame } from "../../hooks/useLeaveGame";
 import { PlayerInfo } from "../../shared";
+import { getLogger } from "../../util";
 import { StyledButton } from "../button";
 
+const logger = getLogger("game::lobby");
+
 export const GameLobby: React.FC = (props) => {
+  const gameState = useGameState();
   const currentGame = useCurrentGameState();
   const leaveGameLogic = useLeaveGame();
+
+  const onStartGame = () => {
+    logger.debug(`Trying to start game.`);
+    gameState.startGame();
+  }
 
   return (
     <React.Fragment>
@@ -38,7 +47,7 @@ export const GameLobby: React.FC = (props) => {
         <Grid item container direction="row" justify="space-around">
           {currentGame.isOwner ? (
             <Grid item>
-              <StyledButton color="red">Start Game</StyledButton>
+              <StyledButton color="red" onClick={onStartGame}>Start Game</StyledButton>
             </Grid>
           ) : null}
           <Grid item>
