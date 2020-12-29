@@ -8,12 +8,12 @@ import { GameRoom } from "./pages/GameRoom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    fontWeight: 500,
-    fontStretch: "normal",
-    fontStyle: "normal",
-    lineHeight: "normal",
-    letterSpacing: "0.5px",
-    textAlign: "left",
+    // fontWeight: 500,
+    // fontStretch: "normal",
+    // fontStyle: "normal",
+    // lineHeight: "normal",
+    // letterSpacing: "0.5px",
+    // textAlign: "left",
     paddingTop: "50px",
   },
 }));

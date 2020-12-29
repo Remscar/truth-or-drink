@@ -1,20 +1,17 @@
 import { Grid, Typography } from "@material-ui/core";
 import React from "react";
-import { useStartedGameState } from "../../hooks/useGameState";
+import { useCurrentGameState } from "../../hooks/useGameState";
+import { useLeaveGame } from "../../hooks/useLeaveGame";
 import { PlayerInfo } from "../../shared";
 import { StyledButton } from "../button";
 
 export const GameLobby: React.FC = (props) => {
-  const gameState = useStartedGameState();
-
-  if (!gameState.currentGame || gameState.currentGame.started) {
-    return null;
-  }
-
-  console.log(gameState.currentGame);
+  const currentGame = useCurrentGameState();
+  const leaveGameLogic = useLeaveGame();
 
   return (
     <React.Fragment>
+      {leaveGameLogic.component}
       <Grid container direction="column" spacing={2}>
         <Grid item>
           <Typography variant="h3" align="center">
@@ -23,25 +20,38 @@ export const GameLobby: React.FC = (props) => {
         </Grid>
         <Grid item>
           <Typography variant="h4" align="center">
-            {gameState.currentGame.gameCode}
+            {currentGame.gameCode}
           </Typography>
         </Grid>
         <Grid item container direction="column" xs={12}>
           <Grid item>
-            <Typography align="center">Players:</Typography>
+            <Typography align="center" variant="subtitle2">
+              Players:
+            </Typography>
           </Grid>
-          {gameState.currentGame.players.map((p: PlayerInfo) => (
+          {currentGame.players.map((p: PlayerInfo) => (
             <Grid item key={p.name}>
               <Typography align="center">{p.name}</Typography>
             </Grid>
           ))}
         </Grid>
         <Grid item container direction="row" justify="space-around">
+          {currentGame.isOwner ? (
+            <Grid item>
+              <StyledButton color="red">Start Game</StyledButton>
+            </Grid>
+          ) : null}
           <Grid item>
-            <StyledButton color="red">Start Game</StyledButton>
-          </Grid>
-          <Grid item>
-            <StyledButton color="gray" href="/">
+            {!currentGame.isOwner ? (
+              <Typography align="center" variant="subtitle1">
+                Waiting for host to start....
+              </Typography>
+            ) : null}
+            <StyledButton
+              fullWidth
+              color="gray"
+              onClick={leaveGameLogic.leaveGame}
+            >
               Leave
             </StyledButton>
           </Grid>

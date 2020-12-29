@@ -29,3 +29,7 @@ export interface CompleteGameStateDto extends Dto {
   started: boolean;
   players: PlayerInfo[];
 }
+
+export interface LeaveGameDto extends Dto {
+
+}

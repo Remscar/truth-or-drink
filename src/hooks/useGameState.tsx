@@ -7,6 +7,7 @@ import {
   CreateDto,
   JoinDto,
   JoinedDto,
+  LeaveGameDto,
   PlayerInfo,
 } from "../shared";
 import { useSocket } from "./useSocket";
@@ -30,6 +31,7 @@ export interface GameStateContext {
     player: PlayerInfo,
     gameCode: string
   ) => Promise<CouldError<boolean>>;
+  leaveGame: () => Promise<void>;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -42,12 +44,12 @@ export const useGameState = () => {
   return context;
 };
 
-export const useStartedGameState = () => {
+export const useCurrentGameState = () => {
   const context = React.useContext(gameStateContext);
   if (!context || !context.currentGame) {
     throw Error("Game Session Not ready");
   }
-  return context;
+  return context.currentGame;
 };
 
 export const useRawGameState = () => {
@@ -148,6 +150,18 @@ export const GameStateContextProvider: React.FC = (props) => {
     });
   };
 
+  const leaveGame = async () => {
+    if (!currentGameState || !playerInfo) {
+      return;
+    }
+    
+    const socket = await getSocket();
+    socket.emit('leaveGame', {} as LeaveGameDto);
+
+    setPlayerInfo(null);
+    setCurrentGameState(null);
+  }
+
   
   const memoValue = React.useMemo(
     () => ({
@@ -155,6 +169,7 @@ export const GameStateContextProvider: React.FC = (props) => {
       playerInfo: playerInfo,
       joinGame,
       createGame,
+      leaveGame
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentGameState]
