@@ -2,7 +2,7 @@ import React from "react";
 import { getLogger, Maybe, Socket } from "../util";
 
 import openSocket from "socket.io-client";
-import { CreatedDto, CreateDto, PlayerInfo } from "../shared";
+import { CreatedDto, CreateDto, JoinDto, PlayerInfo } from "../shared";
 
 export * from "./useGameStateHelpers";
 
@@ -66,8 +66,18 @@ export const GameStateContextProvider: React.FC = (props) => {
   };
 
   const joinGame = async (player: PlayerInfo, gameCode: string) => {
-    logger.log(`User ${player.name} has joined game ${gameCode}`);
-    //setGameId(gameId);
+    const socket = await getSocket();
+    const dto: JoinDto = {
+      player,
+      gameCode
+    }
+
+    socket.emit('join', dto);
+
+
+    return new Promise<string>((resolve) => {
+      
+    })
 
     return true;
   };
@@ -81,11 +91,8 @@ export const GameStateContextProvider: React.FC = (props) => {
     };
     socket.emit("create", dto);
 
-    setAwaitingResponse(true);
-
     return new Promise<string>((resolve) => {
       socket.once("created", (data: CreatedDto) => {
-        setAwaitingResponse(false);
 
         logger.log(`Server created our game with code: ${data.gameCode}`);
         setGameState({

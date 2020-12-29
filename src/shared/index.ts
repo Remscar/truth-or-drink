@@ -7,9 +7,18 @@ export interface Dto {
 }
 
 export interface CreateDto extends Dto {
-  creator: PlayerInfo
+  creator: PlayerInfo;
 }
 
 export interface CreatedDto extends Dto {
   gameCode: string;
+}
+
+export interface JoinDto extends Dto {
+  player: PlayerInfo;
+  gameCode: string;
+}
+
+export interface JoinedDto extends Dto {
+  success: boolean;
 }
