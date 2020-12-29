@@ -66,7 +66,7 @@ export const registerNewClientConnection = (socket: Socket) => {
 
     await game.playerDisconnected(player);
 
-    logger.log(`Socket of player ${socket.id} has disconnected.`);
+    logger.log(`Socket of player ${player.name} ${socket.id} has disconnected.`);
   });
 
   socket.on('leaveGame', async () => {
@@ -74,13 +74,19 @@ export const registerNewClientConnection = (socket: Socket) => {
       return;
     }
 
-    await game.removePlayerFromGame(player);
-    game.sendGameState();
+    try {
+      logger.log(`Player ${player.name} is leaving game ${game.code}`);
 
-    logger.log(`Player ${player.name} has left game ${game.code}`);
+      await game.removePlayerFromGame(player);
+      game.sendGameState();
 
-    game = null;
-    player = null;
+      game = null;
+      player = null;
+    } catch (e) {
+      logger.error(`Error: ${e}`);
+    }
+
+    
   });
 
   socket.on('startGame', async () => {

@@ -24,7 +24,12 @@ export const createGameState = (code: string, originalOwner: Player) => {
   let ownerName = originalOwner.name;
 
   const getOwner = () => {
-    return players.find(e => e.name == ownerName);
+    const owner = players.find(e => e.name == ownerName);
+    if (!owner) {
+      throw Error(`No Owner Found for game ${code}`);
+    }
+
+    return owner;
   }
 
   const joinGame = async (player: Player) => {
