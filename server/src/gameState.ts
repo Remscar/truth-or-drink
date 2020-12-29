@@ -61,11 +61,12 @@ export const createGameState = (code: string, originalOwner: Player) => {
   }
 
   const sendGameState = () => {
+    const ownerPlayer = getOwner();
     const dto: CompleteGameStateDto = {
       gameCode: code,
       started: started,
-      owner: getOwner().socket.id,
-      players: players.map(e => ({name: e.name}))
+      owner: ownerPlayer.socket.id,
+      players: players.map(e => ({name: e.name, owner: e === ownerPlayer}))
     }
     logger.debug(`Sending game state to all players in ${code}`);
 

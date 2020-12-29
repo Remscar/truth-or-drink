@@ -1,5 +1,6 @@
 export interface PlayerInfo {
   name: string;
+  owner?: boolean;
 }
 
 export interface Dto {

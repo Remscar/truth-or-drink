@@ -17,7 +17,7 @@ export const useGameCodeInput = (): GameCodeInput => {
   const onCodeChanged = (
     event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
-    const newValue = event.target.value;
+    const newValue = event.target.value.toUpperCase();
 
     if (newValue.length > maxCodeLength) {
       setCodeError(true);

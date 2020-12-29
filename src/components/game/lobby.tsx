@@ -16,7 +16,7 @@ export const GameLobby: React.FC = (props) => {
   const onStartGame = () => {
     logger.debug(`Trying to start game.`);
     gameState.startGame();
-  }
+  };
 
   return (
     <React.Fragment>
@@ -39,15 +39,27 @@ export const GameLobby: React.FC = (props) => {
             </Typography>
           </Grid>
           {currentGame.players.map((p: PlayerInfo) => (
-            <Grid item key={p.name}>
-              <Typography align="center">{p.name}</Typography>
+            <Grid item key={p.name} container direction="row" justify="center">
+              {p.owner ? (
+                <Grid item>
+                  <Typography
+                    align="center"
+                    style={{ paddingRight: "24px" }}
+                  >{`👑`}</Typography>
+                </Grid>
+              ) : null}
+              <Grid item>
+                <Typography align="center">{`${p.name}`}</Typography>
+              </Grid>
             </Grid>
           ))}
         </Grid>
         <Grid item container direction="row" justify="space-around">
           {currentGame.isOwner ? (
             <Grid item>
-              <StyledButton color="red" onClick={onStartGame}>Start Game</StyledButton>
+              <StyledButton color="red" onClick={onStartGame}>
+                Start Game
+              </StyledButton>
             </Grid>
           ) : null}
           <Grid item>
