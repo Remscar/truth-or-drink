@@ -1,4 +1,5 @@
 import { CompleteGameStateDto, getLogger, Maybe, PlayerInfo, Round, RoundState } from "../util";
+import { toPlayerInfo } from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
 import { getRoundData } from "./todGame";
@@ -35,7 +36,7 @@ export class GameState extends BaseGameState {
         owner: e === ownerPlayer,
       })),
       state: this._roundState,
-      dealer: this.dealer ? {name: this.dealer.name} : null,
+      dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound
     };
     logger.debug(`Sending game state to all players in ${this.code}`);
