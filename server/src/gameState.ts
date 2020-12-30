@@ -1,5 +1,5 @@
 import { CompleteGameStateDto, getLogger, Maybe, PlayerInfo, Round, RoundState, ToDGameState } from "../util";
-import { toPlayerInfo } from "../util/helpers";
+import { randomElementFromArray, toPlayerInfo } from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
 import { getRoundData } from "./todGame";
@@ -60,9 +60,9 @@ export class GameState extends BaseGameState {
   };
 
   public async newRound() {
-    if (this._roundState != "waiting") {
-      throw Error(`Tried to start a round when one is already going`);
-    }
+    // if (this._roundState != "waiting") {
+    //   throw Error(`Tried to start a round when one is already going`);
+    // }
 
     // choose round type
     const newRound = getRoundData();
@@ -112,6 +112,39 @@ export class GameState extends BaseGameState {
     logger.debug(`Question order for ${this.code} is now ${questionOrder.join(', ')}`);
 
     this._currentRound.questionsToAsk = questionOrder;
+  }
+
+  private chooseNextDealer(): PlayerInfo {
+    const nextDealer = randomElementFromArray(this.players);
+    return nextDealer;
+  }
+
+  public async playerAnsweredQuestion(didAnswer: boolean) {
+    if (this._roundState != "asking") {
+      throw Error(`Not in the asking state`)
+    }
+
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    didAnswer; // not actually doing anything with this yet
+
+    if (this._currentRound.turn === undefined) {
+      throw Error("invalid game state");
+    }
+
+    const nextTurn = this._currentRound.turn + 1;
+
+    if (nextTurn >= this._currentRound.questions.length) {
+      // out of questions in this round, so onto the next
+      this._dealer = this.chooseNextDealer();
+      this.newRound();
+      return;
+    }
+
+    // Go to the next turn
+    this._currentRound.turn = nextTurn;
   }
 
 }

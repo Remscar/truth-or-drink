@@ -1,6 +1,6 @@
 import { join } from "path";
 import { Socket } from "socket.io";
-import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, SelectedPlayersDto } from "../util";
+import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, SelectedPlayersDto } from "../util";
 import { gameManager } from "./games";
 import { GameState } from "./gameState";
 import { createPlayer, Player } from "./player";
@@ -136,6 +136,21 @@ export const registerNewClientConnection = (socket: Socket) => {
     await game.playerChoseQuestion(data.index);
 
     game.sendGameState();
+  });
+
+  socket.on('playerAnswered', async (data: PlayerAnsweredDto) => {
+    if (!player || !game) {
+      return;
+    }
+
+    logger.log(`${player.name} says that the asked person ${data.didAnswer ? "did" : "did not"} answer the question.`);
+
+    // no security here either, i'm on a timeline here
+
+    await game.playerAnsweredQuestion(data.didAnswer);
+
+    game.sendGameState();
+
   })
 
 

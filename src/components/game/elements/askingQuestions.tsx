@@ -45,7 +45,9 @@ export const AskingQuestion: React.FC = (props) => {
   const questionIndexToAsk = questionIndicesToAsk[turnIndex];
   const askedQuestion = round.questions[questionIndexToAsk];
 
-  const playerAnswered = (didTheyAnswer: boolean) => {};
+  const playerAnswered = async (didTheyAnswer: boolean) => {
+    await gameState.playerAnsweredQuestion(didTheyAnswer);
+  };
 
   let displayComponent: Maybe<React.ReactNode> = null;
 

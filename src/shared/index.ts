@@ -60,3 +60,7 @@ export interface SelectedPlayersDto extends Dto {
 export interface ChoseQuestionDto extends Dto {
   index: number
 }
+
+export interface PlayerAnsweredDto extends Dto {
+  didAnswer: boolean
+}

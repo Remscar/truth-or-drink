@@ -40,7 +40,6 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
 
   const playerIsSelected = (p: PlayerInfo) => {
     const foundIndex = selectedPlayers.findIndex((e: PlayerInfo) => e.name === p.name);
-    console.log(foundIndex, p.name, selectedPlayers);
     return foundIndex > -1;
   }
 
