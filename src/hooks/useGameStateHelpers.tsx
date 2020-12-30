@@ -34,7 +34,8 @@ export const CreateGameIfNotInOne: React.FC = props => {
     }
 
     if (!gameState.currentGame) {
-      gameState.createGame({name: "Zachary Test"});
+      let randomName = "Zachary" + Math.floor(Math.random() * 100);
+      gameState.createGame({name: randomName });
     }
   }, [gameState]);
 

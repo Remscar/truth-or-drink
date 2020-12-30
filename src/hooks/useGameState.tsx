@@ -9,6 +9,7 @@ import {
   JoinedDto,
   LeaveGameDto,
   PlayerInfo,
+  ToDGameState,
 } from "../shared";
 import { useSocket } from "./useSocket";
 
@@ -16,10 +17,7 @@ export * from "./useGameStateHelpers";
 
 const logger = getLogger("hooks:useGameState");
 
-export interface GameState {
-  gameCode: string;
-  started: boolean;
-  players: PlayerInfo[];
+export interface GameState extends ToDGameState {
   isOwner: boolean;
 }
 
@@ -63,6 +61,13 @@ export const GameStateContextProvider: React.FC = (props) => {
   const [currentGameState, setCurrentGameState] = React.useState<Maybe<GameState>>(null);
   const [playerInfo, setPlayerInfo] = React.useState<Maybe<PlayerInfo>>(null);
 
+  const updateGameState = (data: ToDGameState) => {
+    setCurrentGameState({
+      ...data,
+      isOwner: data.owner === gameSocket.id,
+    });
+  }
+
 
   gameSocket.on("connect", () => {
     logger.debug("client connected");
@@ -79,12 +84,7 @@ export const GameStateContextProvider: React.FC = (props) => {
       );
     }
 
-    setCurrentGameState({
-      gameCode: data.gameCode,
-      started: data.started,
-      players: data.players,
-      isOwner: data.owner === gameSocket.id,
-    });
+    updateGameState(data);
   });
 
   const getSocket = async () => {
@@ -106,14 +106,9 @@ export const GameStateContextProvider: React.FC = (props) => {
           `Was ${data.success ? null : "not"} successful joining ${gameCode}`
         );
 
-        if (data.success) {
-          setCurrentGameState({
-            gameCode,
-            started: false,
-            players: [],
-            isOwner: false,
-          });
+        if (data.success && data.state) {
           setPlayerInfo(player);
+          updateGameState(data.state);
         }
 
         resolve({
@@ -136,13 +131,8 @@ export const GameStateContextProvider: React.FC = (props) => {
     return new Promise<string>((resolve) => {
       socket.once("created", (data: CreatedDto) => {
         logger.log(`Server created our game with code: ${data.gameCode}`);
-        setCurrentGameState({
-          gameCode: data.gameCode,
-          started: false,
-          players: [player],
-          isOwner: true,
-        });
         setPlayerInfo(player);
+        updateGameState(data);
 
         resolve(data.gameCode);
       });

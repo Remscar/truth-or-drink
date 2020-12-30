@@ -15,7 +15,7 @@ export const GameRound: React.FC<Props> = (props: Props) => {
 
   return (
     <React.Fragment>
-      Boo
+      
     </React.Fragment>
   );
 };

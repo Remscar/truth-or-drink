@@ -1,11 +1,11 @@
 import { GameState } from ".";
-import { getLogger, IMap, PlayerInfo } from "../util";
+import { getLogger, IMap, Maybe, PlayerInfo } from "../util";
 import { createGameState } from "./gameState";
 import { Player } from "./player";
 
 const logger = getLogger("games");
 
-const games: IMap<GameState> = {};
+const games: Map<string, GameState> = new Map<string, GameState>();
 
 
 const generateGameCode = () => {
@@ -18,15 +18,12 @@ const generateGameCode = () => {
     code = code + randomDigit;
   }
 
-  return code;
-}
-
-const gameExists = (gameCode: string) => {
-  return games[gameCode] !== undefined;
+  return "A";
+  //return code;
 }
 
 const getGame = (gameCode: string) => {
-  return games[gameCode];
+  return games.get(gameCode);
 }
 
 const createNewGame = async (creator: Player) => {
@@ -34,8 +31,17 @@ const createNewGame = async (creator: Player) => {
 
   logger.log(`Creating game for ${creator.name} with code ${gameCode}`);
 
-  const newGameState = createGameState(gameCode, creator);
-  games[gameCode] = newGameState;
+  let newGameState: Maybe<GameState> = null;
+  if (!games.has(gameCode)) {
+    newGameState = createGameState(gameCode, creator);
+    games.set(gameCode, newGameState);
+  } else {
+    const game = games.get(gameCode);
+    if (!game) {
+      throw Error("impossible");
+    }
+    newGameState = game;
+  }
 
   await joinGame(gameCode, creator);
 
@@ -57,8 +63,7 @@ const joinGame = async (gameCode: string, player: Player) => {
 
 const destroyGame = async (gameCode: string) => {
   logger.log(`Destroying game ${gameCode}`);
-
-  games[gameCode] = undefined;
+  games.delete(gameCode);
 }
 
 

@@ -23,7 +23,7 @@ export const registerNewClientConnection = (socket: Socket) => {
     const createdGame = await gameManager.createNewGame(player);
 
     const response: CreatedDto = {
-      gameCode: createdGame.code
+      ...createdGame.currentGameState()
     }
     socket.emit('created', response);
 
@@ -35,19 +35,23 @@ export const registerNewClientConnection = (socket: Socket) => {
     logger.log(`${data.player.name} requests to join game ${data.gameCode}`);
 
     player = createPlayer(data.player.name, socket);
-
-    let response: JoinedDto = {
-      success: false
-    }
+    let success = false;
+    let error = "";
     
     let joinedGame: Maybe<GameState> = null;
     try {
       joinedGame = await gameManager.joinGame(data.gameCode, player);
       logger.log(`${data.player.name} has joined game ${data.gameCode}`);
-      response.success = true;
+      success = true;
     } catch (e) {
       logger.log(`${data.player.name} failed to join game ${data.gameCode}: ${e}`);
-      response.error = e.message;
+      error = e.message;
+    }
+
+    let response: JoinedDto = {
+      success,
+      error,
+      state: joinedGame ? joinedGame.currentGameState() : null
     }
 
     socket.emit('joined', response);

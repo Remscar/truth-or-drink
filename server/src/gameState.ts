@@ -1,4 +1,4 @@
-import { CompleteGameStateDto, getLogger, Maybe, PlayerInfo, Round, RoundState } from "../util";
+import { CompleteGameStateDto, getLogger, Maybe, PlayerInfo, Round, RoundState, ToDGameState } from "../util";
 import { toPlayerInfo } from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
@@ -25,9 +25,9 @@ export class GameState extends BaseGameState {
     return foundDealer;
   }
 
-  public sendGameState = () => {
+  public currentGameState(): ToDGameState {
     const ownerPlayer = this.owner;
-    const dto: CompleteGameStateDto = {
+    const state = {
       gameCode: this.code,
       started: this.started,
       owner: ownerPlayer.socket.id,
@@ -38,6 +38,15 @@ export class GameState extends BaseGameState {
       state: this._roundState,
       dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound
+    }
+
+    return state;
+  }
+
+  public sendGameState = () => {
+    const currentState = this.currentGameState();
+    const dto: CompleteGameStateDto = {
+      ...currentState
     };
     logger.debug(`Sending game state to all players in ${this.code}`);
 
