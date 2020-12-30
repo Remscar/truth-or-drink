@@ -77,7 +77,15 @@ export abstract class BaseGameState {
   };
 
   public playerDisconnected = async (player: Player) => {
-    this.removePlayerFromGame(player);
+    setTimeout(() => {
+      if (this) {
+        const tryDestroy = this.removePlayerFromGame(player);
+        tryDestroy && this.destroyGameIfNeeded();
+      }
+      
+    }, 10 * 1000);
+
+    
     this.destroyGameIfNeeded();
   };
 
@@ -93,13 +101,13 @@ export abstract class BaseGameState {
     return false;
   }
 
-  public removePlayerFromGame = async (player: Player) => {
+  public async removePlayerFromGame(player: Player) {
     const index = this.players.findIndex((e) => e.name === player.name);
     if (index < 0) {
       logger.log(
         `Tried to remove player ${player.name} from ${this.code} but they aren't there`
       );
-      return;
+      return false;
     }
 
     this.players.splice(index, 1);

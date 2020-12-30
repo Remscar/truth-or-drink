@@ -11,7 +11,7 @@ const logger = getLogger("clientSockets");
 
 
 export const registerNewClientConnection = (socket: Socket) => {
-  logger.debug(`Setting up event handlers on new client socket.`);
+  logger.debug(`Setting up event handlers on new client socket. ${socket.id}`);
 
   let player: Maybe<Player> = null;
   let game: Maybe<GameState> = null;

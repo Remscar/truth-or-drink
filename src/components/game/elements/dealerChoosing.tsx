@@ -61,6 +61,7 @@ export const DealerChoosing: React.FC = (props) => {
                 const realClassName = classes[className];
                 return (
                   <Grid
+                    key={index}
                     item
                     className={`${classes.question} ${
                       realClassName ? realClassName : ""

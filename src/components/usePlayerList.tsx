@@ -93,7 +93,7 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
             const isSelected = playerIsSelected(p);
             const playerGridClasses = `${classes.player} ${classes.selectablePlayer} ${isSelected ? classes.selectedPlayer : classes.notSelectedPlayer}`
             return (
-            <ListItem className={playerGridClasses} button onClick={() => onSelectPlayer(p.name)} selected={isSelected}>
+            <ListItem key={p.name} className={playerGridClasses} button onClick={() => onSelectPlayer(p.name)} selected={isSelected}>
               <ListItemText primary={p.name} />
             </ListItem>
           )}

@@ -68,6 +68,7 @@ export const AskerChoosing: React.FC = (props) => {
               return (
                 <Grid
                   item
+                  key={index}
                   className={`${classes.question} ${
                     realClassName ? realClassName : ""
                   }`}
@@ -78,16 +79,23 @@ export const AskerChoosing: React.FC = (props) => {
               );
             })}
           </Grid>
-          <Grid item style={{paddingTop: '24px'}}>
-            <Typography align="center" >
+          <Grid item style={{ paddingTop: "24px" }}>
+            <Typography align="center">
               Select which question they should answer:
             </Typography>
           </Grid>
-          <Grid item container direction="row" justify="space-around" style={{paddingTop: '24px'}}>
+          <Grid
+            item
+            container
+            direction="row"
+            justify="space-around"
+            style={{ paddingTop: "24px" }}
+          >
             {questions.map((question: string, index: number) => {
               const color = index ? "blue" : "red";
               return (
                 <StyledButton
+                  key={index}
                   color={color}
                   onClick={() => choseQuestion(index)}
                 >

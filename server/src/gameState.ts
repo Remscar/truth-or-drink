@@ -25,6 +25,29 @@ export class GameState extends BaseGameState {
     return foundDealer;
   }
 
+  public async removePlayerFromGame(player: Player) {
+    const shouldDestroy = await super.removePlayerFromGame(player);
+
+    if (shouldDestroy) {
+      return shouldDestroy;
+    }
+
+    if (this._dealer?.name === player.name) {
+      this._dealer = this.players[0];
+      this.newRound();
+      this.sendGameState();
+    }
+    else if (this._currentRound && this._currentRound.players) {
+      const foundIndex = this._currentRound.players.findIndex(e => e.name === player.name);
+      if (foundIndex > -1) {
+        this.newRound();
+        this.sendGameState();
+      }
+    }
+
+    return false;
+  }
+
   public currentGameState(): ToDGameState {
     const ownerPlayer = this.owner;
     const state = {
