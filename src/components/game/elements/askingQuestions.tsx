@@ -24,6 +24,12 @@ export const AskingQuestion: React.FC = (props) => {
   const turnIndex = currentGame.currentRound?.turn;
   const questionIndicesToAsk = currentGame.currentRound?.questionsToAsk;
 
+  const [hasLikedAnswer, setHasLikedAnswer] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasLikedAnswer(false);
+  }, [turnIndex])
+
   if (
     !currentGame ||
     !localPlayer ||
@@ -32,7 +38,7 @@ export const AskingQuestion: React.FC = (props) => {
     !questionIndicesToAsk ||
     turnIndex === undefined
   ) {
-    return null;
+    return <div>Broken ask questions</div>;
   }
 
   const actingPlayer = involvedPlayers[turnIndex];
@@ -48,6 +54,11 @@ export const AskingQuestion: React.FC = (props) => {
   const playerAnswered = async (didTheyAnswer: boolean) => {
     await gameState.playerAnsweredQuestion(didTheyAnswer);
   };
+
+  const onLikeAnswer = async () => {
+    setHasLikedAnswer(true);
+    await gameState.likeAnswer(otherPlayer);
+  }
 
   let displayComponent: Maybe<React.ReactNode> = null;
 
@@ -102,13 +113,33 @@ export const AskingQuestion: React.FC = (props) => {
           <Typography align="center">
             {`You can either answer it, or skip (drink.)`}
           </Typography>
+          <Grid
+            item
+            container
+            direction="column"
+            justify="center"
+            style={{ paddingTop: "24px" }}
+          >
+            <Grid item>
+            <StyledButton fullWidth color={"red"} onClick={() => playerAnswered(true)}>
+              {`I answered`}
+            </StyledButton>
+            </Grid>
+            <Grid item style={{paddingTop: "24px"}}>
+            <StyledButton fullWidth color={"blue"} onClick={() => playerAnswered(false)}>
+              {`I skipped (or drank)`}
+            </StyledButton>
+            </Grid>
+            
+            
+          </Grid>
         </Grid>
       </React.Fragment>
     );
   } else {
     displayComponent = (
       <React.Fragment>
-        <Grid container direction="column">
+        <Grid container direction="column" justify="center" alignItems="center">
           <Grid item>
             <Typography variant="h3" align="center" className={classes.title}>
               Truth?
@@ -116,6 +147,11 @@ export const AskingQuestion: React.FC = (props) => {
             <Typography align="center">
               {`${actingPlayer.name} is asking ${otherPlayer.name} a question`}
             </Typography>
+          </Grid>
+          <Grid item style={{paddingTop: "32px"}}>
+            <StyledButton disabled={hasLikedAnswer} onClick={onLikeAnswer} color="blue">
+            👍 Answer
+            </StyledButton>
           </Grid>
         </Grid>
       </React.Fragment>

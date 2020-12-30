@@ -32,7 +32,7 @@ export const DealerChoosing: React.FC = (props) => {
   });
 
   if (!currentDealer || !localPlayer || !currentGame.currentRound) {
-    return null;
+    return <div>Broken dealer choosing</div>;
   }
 
   const canContinue = playerList.selectedPlayers.length > 1;

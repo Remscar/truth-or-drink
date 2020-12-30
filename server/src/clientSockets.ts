@@ -1,6 +1,6 @@
 import { join } from "path";
 import { Socket } from "socket.io";
-import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, PlayerChoseWinnerDto, SelectedPlayersDto } from "../util";
+import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, PlayerAnswerLikedDto, PlayerChoseWinnerDto, SelectedPlayersDto } from "../util";
 import { gameManager } from "./games";
 import { GameState } from "./gameState";
 import { createPlayer, Player } from "./player";
@@ -176,6 +176,16 @@ export const registerNewClientConnection = (socket: Socket) => {
     await game.startNextRound();
 
     game.sendGameState();
+  });
+
+  socket.on('playerAnswerLiked', async (data: PlayerAnswerLikedDto) => {
+    if (!player || !game) {
+      return;
+    }
+
+    logger.log(`${player.name} liked ${data.player}'s answer`);
+
+    await game.playerLikedAnswer(player, data.player);
   })
 
 

@@ -12,6 +12,7 @@ interface PlayerList {
 interface PlayerListOptions {
   showOwner?: boolean;
   selectable?: number;
+  limitedList?: PlayerInfo[]
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -37,6 +38,8 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
   const [selectedPlayers, setSelectedPlayers] = React.useState<PlayerInfo[]>(
     []
   );
+
+  let players = options.limitedList ?? currentGame.players;
 
   const playerIsSelected = (p: PlayerInfo) => {
     const foundIndex = selectedPlayers.findIndex((e: PlayerInfo) => e.name === p.name);
@@ -89,7 +92,7 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
           )}
         </Grid> */}
         <List component="nav" aria-label="player list">
-        {currentGame.players.map((p: PlayerInfo) => {
+        {players.map((p: PlayerInfo) => {
             const isSelected = playerIsSelected(p);
             const playerGridClasses = `${classes.player} ${classes.selectablePlayer} ${isSelected ? classes.selectedPlayer : classes.notSelectedPlayer}`
             return (
@@ -105,7 +108,7 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
     component = (
       <React.Fragment>
         <Grid container direction="column">
-          {currentGame.players.map((p: PlayerInfo) => (
+          {players.map((p: PlayerInfo) => (
             <Grid item key={p.name} container direction="row" justify="center">
               {options.showOwner && p.owner ? (
                 <Grid item>

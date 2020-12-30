@@ -26,7 +26,7 @@ export const ScorePage: React.FC = (props) => {
   const dealer = currentGame.dealer;
 
   if (!currentGame || !localPlayer || !dealer) {
-    return null;
+    return <div>Broken scores :(</div>;
   }
 
   const startRound = async () => {
@@ -61,6 +61,16 @@ export const ScorePage: React.FC = (props) => {
     )
     .sort((a: PlayerScore, b: PlayerScore) => b.score - a.score);
 
+  const sortedPlayerLikes = Object.entries(currentGame.likes)
+    .map(
+      ([player, score]) =>
+        ({
+          player,
+          score: score as number,
+        } as PlayerScore)
+    )
+    .sort((a: PlayerScore, b: PlayerScore) => b.score - a.score);
+
   return (
     <React.Fragment>
       <Grid container direction="column" alignItems="center">
@@ -75,10 +85,15 @@ export const ScorePage: React.FC = (props) => {
         </Typography>
         <Grid item container direction="column" alignItems="center">
           {sortedPlayerScores.map((data: PlayerScore, index: number) => {
+
+            const topLiked = sortedPlayerLikes[0].player === data.player && sortedPlayerLikes[0].score > 0;
+
+            const numLikes = currentGame.likes[data.player];
+
             return (
               <Grid key={data.player} item>
-                <Typography className={classes.scoreLine}>
-                  {`${index === 0 ? `👑` : ``} ${data.player}: ${data.score}`}
+                <Typography className={classes.scoreLine} style={{whiteSpace: "break-spaces"}}>
+                  {`${index === 0 ? `👑` : ``}${topLiked ? `❤️` : ``} ${data.player.padEnd(24)} ${data.score} (${numLikes} 👍)`}
                 </Typography>
               </Grid>
             );

@@ -12,8 +12,8 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: "32px",
   },
   choiceButton: {
-    paddingTop: "32px"
-  }
+    paddingTop: "32px",
+  },
 }));
 
 export const ChooseWinner: React.FC = (props) => {
@@ -24,13 +24,30 @@ export const ChooseWinner: React.FC = (props) => {
   const round = currentGame.currentRound;
   const involvedPlayers = currentGame.currentRound?.players;
   const dealer = currentGame.dealer;
+  const alreadyLikedList = currentGame.currentRound?.likedAnswers;
+
+  const [hasLikedPlayers, setHasLikedPlayers] = React.useState<number[]>([]);
 
   if (!currentGame || !localPlayer || !round || !involvedPlayers || !dealer) {
-    return null;
+    return <div>Broken choose winner</div>;
+  }
+
+
+  let playersWeHaveLiked: string[] | undefined;
+  if (alreadyLikedList) {
+    playersWeHaveLiked = alreadyLikedList[localPlayer.name];
   }
 
   const choseWinner = async (winner: PlayerInfo) => {
     await gameState.choseWinner(winner);
+  };
+
+  const likePlayerAnswer = async (player: PlayerInfo, index: number) => {
+    const newLikes = Object.assign([], hasLikedPlayers);
+    newLikes.push(index);
+    setHasLikedPlayers(newLikes);
+
+    await gameState.likeAnswer(player);
   };
 
   let displayComponent: Maybe<React.ReactNode> = null;
@@ -70,8 +87,36 @@ export const ChooseWinner: React.FC = (props) => {
             Winner
           </Typography>
           <Typography align="center">
-            {`${dealer.name} is deciding who had the best answer.`}
+            {`${dealer.name} is deciding who the winner is...`}
           </Typography>
+          <Typography align="center">
+            {`But you can award points to answers you liked`}
+          </Typography>
+          <Grid item container direction="column">
+            {involvedPlayers.map((player: PlayerInfo, index: number) => {
+              const color = index ? "blue" : "red";
+              const hasLiked =
+                hasLikedPlayers.findIndex((e) => e === index) > -1 ||
+                (playersWeHaveLiked && playersWeHaveLiked.findIndex(e => e === player.name) > -1);
+              let buttonText = `👍 ${player.name}'s answer`;
+              if (hasLiked) {
+                buttonText = `You already liked ${player.name}'s answer`;
+              }
+              if (player.name === localPlayer.name) {
+                return null;
+              }
+              return (
+                <Grid className={classes.choiceButton} item key={index}>
+                  <StyledButton
+                    color={color}
+                    fullWidth
+                    disabled={hasLiked}
+                    onClick={() => likePlayerAnswer(player, index)}
+                  >{buttonText}</StyledButton>
+                </Grid>
+              );
+            })}
+          </Grid>
         </Grid>
       </React.Fragment>
     );

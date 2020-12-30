@@ -29,7 +29,7 @@ export const AskerChoosing: React.FC = (props) => {
     !involvedPlayers ||
     turnIndex === undefined
   ) {
-    return null;
+    return <div>Broken asker choosing</div>;
   }
 
   //const isInvolved = involvedPlayers.findIndex(e => e.name === localPlayer.name);

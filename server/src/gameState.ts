@@ -7,12 +7,17 @@ import {
   RoundState,
   ToDGameState,
 } from "../util";
-import { randomElementFromArray, toPlayerInfo } from "../util/helpers";
+import { randomElementFromArray, toExistingPlayerInfo, toPlayerInfo } from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
 import { getRoundData } from "./todGame";
 
 const logger = getLogger("gameState");
+
+const pointsForSkipping = -5;
+const pointsForAnswering = 0;
+const pointsForWinning = 5;
+const pointsForLiking = 1;
 
 export class GameState extends BaseGameState {
   private _dealer: Maybe<PlayerInfo> = null;
@@ -21,6 +26,9 @@ export class GameState extends BaseGameState {
   private _currentRound: Maybe<Round> = null;
 
   private _scores: { [name: string]: number | undefined } = {};
+  private _likes: { [name: string]: number | undefined } = {};
+  private _timesChosen: { [name: string]: number | undefined } = {};
+  private _playerChoices: PlayerInfo[] = [];
 
   private _someoneSkippedAnswering = false;
 
@@ -48,6 +56,16 @@ export class GameState extends BaseGameState {
       this._scores[player.name] = 0;
     }
 
+    if (!this._likes[player.name]) {
+      this._likes[player.name] = 0;
+    }
+
+    if (!this._timesChosen[player.name]) {
+      this._timesChosen[player.name] = 0;
+    }
+
+    this.calculatePlayerChoices();
+
     return true;
   }
 
@@ -55,12 +73,15 @@ export class GameState extends BaseGameState {
     const shouldDestroy = await super.removePlayerFromGame(player);
 
     this._scores[player.name] = undefined;
+    this._likes[player.name] = undefined;
 
     this.sendGameState();
 
     if (shouldDestroy) {
       return shouldDestroy;
     }
+
+    this.calculatePlayerChoices();
 
     if (this._dealer?.name === player.name) {
       this._dealer = this.players[0];
@@ -93,6 +114,8 @@ export class GameState extends BaseGameState {
       dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound,
       scores: this._scores,
+      likes: this._likes,
+      playerChoices: this._playerChoices.map((e) => ({name: e.name}))
     };
 
     return state;
@@ -114,13 +137,51 @@ export class GameState extends BaseGameState {
     this._dealer = this.owner;
   }
 
-  public async newRound() {
-    // if (this._roundState != "waiting") {
-    //   throw Error(`Tried to start a round when one is already going`);
-    // }
+  protected calculatePlayerChoices() {
+    const minNumberPlayers = 2;
+    let maxNumTimesChosen = 1;
+    let playerOptions: string[] = [];
 
+    const playerChosenArray = Object.entries(this._timesChosen).map(([player, timesChosen]) => ({
+      player,
+      timesChosen: timesChosen as number
+    }));
+
+    if (playerChosenArray.length <= minNumberPlayers) {
+      playerOptions = playerChosenArray.map(e => e.player);
+    } else {
+      while (playerOptions.length < minNumberPlayers) {
+        const choosablePlayers = playerChosenArray.filter(e => e.timesChosen < maxNumTimesChosen);
+  
+        if (choosablePlayers.length === 0) {
+          ++maxNumTimesChosen;
+          continue
+        }
+  
+        // We have less than needed # of players left to choose from
+        if (choosablePlayers.length < minNumberPlayers) {
+          playerOptions = playerOptions.concat(choosablePlayers.map(e => e.player));
+  
+          const extraPlayers = playerChosenArray.filter(e => e.timesChosen >= maxNumTimesChosen);
+          for (let i = 0; i < minNumberPlayers && i < extraPlayers.length; ++i) {
+            playerOptions.push(extraPlayers[i].player);
+          }
+  
+          break
+        }
+  
+        playerOptions = choosablePlayers.map(e => e.player);
+      }
+    }
+
+    this._playerChoices = playerOptions.map(e => ({name: e}));
+  }
+
+  public async newRound() {
     // choose round type
     const newRound = getRoundData();
+
+    this.calculatePlayerChoices();
     this._roundState = "dealing";
     this._currentRound = newRound;
 
@@ -141,6 +202,12 @@ export class GameState extends BaseGameState {
     this._currentRound.players = players;
     this._currentRound.turn = 0;
     this._roundState = "choosing";
+    
+    for (const player of players) {
+      let timesChosen = this._timesChosen[player.name] || 0;
+      timesChosen += 1;
+      this._timesChosen[player.name] = timesChosen;
+    }
   }
 
   public async playerChoseQuestion(index: number) {
@@ -186,6 +253,14 @@ export class GameState extends BaseGameState {
     this._scores[player.name] = newScore;
   }
 
+  protected async addToPlayerLikes(player: PlayerInfo, likes: number) {
+    const currentScore = this._likes[player.name];
+    let newLikes = currentScore !== undefined ? currentScore : 0;
+    newLikes += likes;
+
+    this._likes[player.name] = newLikes;
+  }
+
   public async playerAnsweredQuestion(didAnswer: boolean) {
     if (this._roundState != "asking") {
       throw Error(`Not in the asking state`);
@@ -201,7 +276,7 @@ export class GameState extends BaseGameState {
 
     const answeringPlayer = this._currentRound.players[this._currentRound.turn];
 
-    this.addToPlayerScore(answeringPlayer, didAnswer ? 0 : -1);
+    this.addToPlayerScore(answeringPlayer, didAnswer ? pointsForAnswering : pointsForSkipping);
 
     const nextTurn = this._currentRound.turn + 1;
 
@@ -235,7 +310,7 @@ export class GameState extends BaseGameState {
       throw Error("no current round!");
     }
 
-    this.addToPlayerScore(winner, 1);
+    this.addToPlayerScore(winner, pointsForWinning);
 
     logger.debug(`${winner.name} won the round.`);
 
@@ -254,6 +329,46 @@ export class GameState extends BaseGameState {
     }
 
     this.newRound();
+  }
+
+  private getLikedAnswers() {
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    if (!this._currentRound.likedAnswers) {
+      this._currentRound.likedAnswers = {}
+    }
+
+    return this._currentRound.likedAnswers;
+  }
+
+  private getPlayersLikedAnswers(player: PlayerInfo) {
+    const likedAnswers = this.getLikedAnswers();
+    if (!likedAnswers[player.name]) {
+      likedAnswers[player.name] = []
+    }
+
+    return likedAnswers[player.name];
+  }
+
+  public async playerLikedAnswer(player: PlayerInfo, likedPlayer: PlayerInfo) {
+    if (this._roundState != "scoring" && this._roundState != "asking") {
+      throw Error(`Not in the asking state`);
+    }
+
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    const playerAnswers = this.getPlayersLikedAnswers(player);
+    if (playerAnswers.findIndex((e) => e === likedPlayer.name) < 0) {
+      playerAnswers.push(likedPlayer.name);
+      this.addToPlayerScore(likedPlayer, pointsForLiking);
+      this.addToPlayerLikes(likedPlayer, 1);
+    } else {
+      logger.debug(`${player.name} already voted for ${likedPlayer.name}`)
+    }
   }
 }
 

@@ -12,6 +12,7 @@ export interface Round {
   players?: PlayerInfo[];
   turn?: number;
   questionsToAsk?: number[];
+  likedAnswers?:  {[name: string]: string[]}
 }
 
 export interface ToDGameState {
@@ -23,6 +24,8 @@ export interface ToDGameState {
   dealer: Maybe<PlayerInfo>;
   currentRound: Maybe<Round>;
   scores: {[name: string]: number | undefined}
+  likes: {[name: string]: number | undefined}
+  playerChoices: PlayerInfo[];
 }
 
 export interface CompleteGameStateDto extends Dto, ToDGameState {
@@ -66,8 +69,8 @@ export interface PlayerAnsweredDto extends Dto {
   didAnswer: boolean
 }
 
-export interface PlayerLikedDto extends Dto {
-  likedPlayed: PlayerInfo
+export interface PlayerAnswerLikedDto extends Dto {
+  player: PlayerInfo
 }
 
 export interface PlayerChoseWinnerDto extends Dto {
