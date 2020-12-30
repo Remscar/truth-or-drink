@@ -46,6 +46,11 @@ export const GameRound: React.FC<Props> = (props: Props) => {
             </Typography>
           </Grid>
           <Grid item>
+            <Typography variant="subtitle1" align="center">
+              You are {gameState.playerInfo?.name}
+            </Typography>
+          </Grid>
+          <Grid item>
             <StyledButton
               fullWidth
               color="gray"
