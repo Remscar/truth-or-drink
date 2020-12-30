@@ -15,23 +15,21 @@ logger.log(`Starting server`);
 // console.log that your server is up and running
 server.listen(port, () => console.log(`Listening on port ${port}`));
 
-app.use(express.static(path.join(__dirname, 'build')))
-
-app.get('/ping', (req, res) => {
-  return res.send('pong')
-})
-
-// create a GET route
-app.get('/express_backend', (req, res) => {
-  res.send({ express: 'YOUR EXPRESS BACKEND IS CONNECTED TO REACT' });
-});
-
-app.post('/create', (req, res) => {
-  res.send({ id: 'abcd'});
-})
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'))
+  res.sendFile(path.join(__dirname, '..', 'build', 'index.html'))
 });
+
+app.use('/new', (req, res) => {
+  res.redirect('/');
+});
+app.use('/game', (req, res) => {
+  res.redirect('/');
+});
+app.use('/join', (req, res) => {
+  res.redirect('/');
+});
+
+app.use(express.static(path.join(__dirname, "..", "build")));
 
 initServerSockets(server);

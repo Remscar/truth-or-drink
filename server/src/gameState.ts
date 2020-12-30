@@ -77,13 +77,12 @@ export class GameState extends BaseGameState {
     this._scores[player.name] = undefined;
     this._likes[player.name] = undefined;
 
-    this.sendGameState();
-
     if (shouldDestroy) {
       return shouldDestroy;
     }
 
     this.calculatePlayerChoices();
+    this.sendGameState();
 
     if (this._dealer?.name === player.name) {
       this._dealer = this.players[0];
