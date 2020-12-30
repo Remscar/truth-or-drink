@@ -66,8 +66,24 @@ export class GameState extends BaseGameState {
 
     // choose round type
     const newRound = getRoundData();
-    this._roundState = "choosing";
+    this._roundState = "dealing";
     this._currentRound = newRound;
+  }
+
+  public async playersChosen(players: PlayerInfo[]) {
+    if (this._roundState != "dealing") {
+      throw Error(`Not choosing state`)
+    }
+
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    logger.debug(`Players chosen for ${this.code}`);
+
+    this._currentRound.players = players;
+    this._currentRound.turn = 0;
+    this._roundState = "choosing";
   }
 
 }

@@ -9,6 +9,7 @@ import {
   JoinedDto,
   LeaveGameDto,
   PlayerInfo,
+  SelectedPlayersDto,
   ToDGameState,
 } from "../shared";
 import { useSocket } from "./useSocket";
@@ -31,6 +32,7 @@ export interface GameStateContext {
   ) => Promise<CouldError<boolean>>;
   leaveGame: () => Promise<void>;
   startGame: () => void;
+  choosePlayers: (players: PlayerInfo[]) => Promise<void>;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -160,6 +162,15 @@ export const GameStateContextProvider: React.FC = (props) => {
     socket.emit('startGame');
   }
 
+  const choosePlayers = async (players: PlayerInfo[]) => {
+    const socket = await getSocket();
+
+    const dto: SelectedPlayersDto = {
+      players
+    }
+    socket.emit('selectedPlayers', dto);
+  }
+
   
   const memoValue = React.useMemo(
     () => ({
@@ -168,7 +179,8 @@ export const GameStateContextProvider: React.FC = (props) => {
       joinGame,
       createGame,
       leaveGame,
-      startGame
+      startGame,
+      choosePlayers
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentGameState]

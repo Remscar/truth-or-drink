@@ -2,10 +2,9 @@ import { Grid, Typography } from "@material-ui/core";
 import * as React from "react";
 import { useCurrentGameState, useGameState } from "../../hooks/useGameState";
 import { useLeaveGame } from "../../hooks/useLeaveGame";
-import { PlayerInfo } from "../../shared";
 import { getLogger, Maybe } from "../../util";
 import { StyledButton } from "../button";
-import { DealerChoosing } from "./elements";
+import { AskerChoosing, DealerChoosing } from "./elements";
 
 interface Props {}
 
@@ -18,8 +17,10 @@ export const GameRound: React.FC<Props> = (props: Props) => {
 
   let stateElement: Maybe<React.ReactNode> = null;
 
-  if (currentGame.state === "choosing") {
+  if (currentGame.state === "dealing") {
     stateElement = <DealerChoosing />;
+  } else if (currentGame.state === "choosing") {
+    stateElement = <AskerChoosing />;
   }
 
   return (

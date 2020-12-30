@@ -37,8 +37,8 @@ export const DealerChoosing: React.FC = (props) => {
 
   const canContinue = playerList.selectedPlayers.length > 1;
 
-  const onContinue = () => {
-
+  const onContinue = async () => {
+    await gameState.choosePlayers(playerList.selectedPlayers);
   }
 
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

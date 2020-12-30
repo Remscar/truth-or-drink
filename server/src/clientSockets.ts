@@ -1,6 +1,6 @@
 import { join } from "path";
 import { Socket } from "socket.io";
-import { CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe } from "../util";
+import { CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, SelectedPlayersDto } from "../util";
 import { gameManager } from "./games";
 import { GameState } from "./gameState";
 import { createPlayer, Player } from "./player";
@@ -109,7 +109,20 @@ export const registerNewClientConnection = (socket: Socket) => {
     await game.newRound();
 
     game.sendGameState();
-  })
+  });
+
+  socket.on('selectedPlayers', async (data: SelectedPlayersDto) => {
+    if (!player || !game) {
+      return;
+    }
+
+    logger.log(`${player.name} selected ${data.players.length} players`);
+
+    // no security for now, should add later
+    await game.playersChosen(data.players);
+
+    game.sendGameState();
+  });
 
 
 }

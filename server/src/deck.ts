@@ -1,10 +1,10 @@
 import { randomElementFromArray } from "../util/helpers";
 
 export const NormalQuestions = [
-  "Test1",
-  "Test2",
-  "Test3",
-  "Test4",
+  "How many dogs have you eaten in your life?",
+  "Do you like big butts and can you lie?",
+  "Do you find any issue with the fact that this is a question?",
+  "Could there possibly be too much facts in the ocean?",
 ]
 
 export interface Round {

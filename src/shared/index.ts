@@ -5,10 +5,12 @@ export interface PlayerInfo {
   owner?: boolean;
 }
 
-export type RoundState = "waiting" | "choosing";
+export type RoundState = "waiting" | "dealing" | "choosing" | "asking";
 
 export interface Round {
   questions: [string, string];
+  players?: PlayerInfo[];
+  turn?: number;
 }
 
 export interface ToDGameState {
@@ -46,8 +48,10 @@ export interface JoinedDto extends Dto {
   state: Maybe<ToDGameState>;
 }
 
-
-
 export interface LeaveGameDto extends Dto {
 
+}
+
+export interface SelectedPlayersDto extends Dto {
+  players: PlayerInfo[]
 }
