@@ -1,6 +1,6 @@
 import { join } from "path";
 import { Socket } from "socket.io";
-import { CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, SelectedPlayersDto } from "../util";
+import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, SelectedPlayersDto } from "../util";
 import { gameManager } from "./games";
 import { GameState } from "./gameState";
 import { createPlayer, Player } from "./player";
@@ -123,6 +123,20 @@ export const registerNewClientConnection = (socket: Socket) => {
 
     game.sendGameState();
   });
+
+  socket.on('choseQuestion', async (data: ChoseQuestionDto) => {
+    if (!player || !game) {
+      return;
+    }
+
+    logger.log(`${player.name} chose question ${data.index}`);
+
+    // no security for now, will add later (maybe?), hack me
+
+    await game.playerChoseQuestion(data.index);
+
+    game.sendGameState();
+  })
 
 
 }

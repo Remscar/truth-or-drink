@@ -43,7 +43,9 @@ export const AskerChoosing: React.FC = (props) => {
 
   let displayComponent: Maybe<React.ReactNode> = null;
 
-  const choseQuestion = (index: number) => {};
+  const choseQuestion = async (index: number) => {
+    await gameState.choseQuestion(index);
+  };
 
   if (isPlayerTurn) {
     displayComponent = (

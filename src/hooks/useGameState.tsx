@@ -2,6 +2,7 @@ import React from "react";
 import { CouldError, getLogger, Maybe } from "../util";
 
 import {
+  ChoseQuestionDto,
   CompleteGameStateDto,
   CreatedDto,
   CreateDto,
@@ -33,6 +34,7 @@ export interface GameStateContext {
   leaveGame: () => Promise<void>;
   startGame: () => void;
   choosePlayers: (players: PlayerInfo[]) => Promise<void>;
+  choseQuestion: (index: number) => Promise<void>;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -171,6 +173,15 @@ export const GameStateContextProvider: React.FC = (props) => {
     socket.emit('selectedPlayers', dto);
   }
 
+  const choseQuestion = async (index: number) => {
+    const socket = await getSocket();
+
+    const dto: ChoseQuestionDto = {
+      index
+    }
+    socket.emit('choseQuestion', dto);
+  }
+
   
   const memoValue = React.useMemo(
     () => ({
@@ -180,7 +191,8 @@ export const GameStateContextProvider: React.FC = (props) => {
       createGame,
       leaveGame,
       startGame,
-      choosePlayers
+      choosePlayers,
+      choseQuestion
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentGameState]

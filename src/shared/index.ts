@@ -11,6 +11,7 @@ export interface Round {
   questions: [string, string];
   players?: PlayerInfo[];
   turn?: number;
+  questionsToAsk?: number[];
 }
 
 export interface ToDGameState {
@@ -54,4 +55,8 @@ export interface LeaveGameDto extends Dto {
 
 export interface SelectedPlayersDto extends Dto {
   players: PlayerInfo[]
+}
+
+export interface ChoseQuestionDto extends Dto {
+  index: number
 }

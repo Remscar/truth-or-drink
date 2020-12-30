@@ -86,6 +86,34 @@ export class GameState extends BaseGameState {
     this._roundState = "choosing";
   }
 
+  public async playerChoseQuestion(index: number) {
+    if (this._roundState != "choosing") {
+      throw Error(`Not choosing state`)
+    }
+
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    this._roundState = "asking";
+
+    const questionOrder: number[] = this._currentRound.questionsToAsk ?? [];
+    questionOrder.push(index);
+    
+    if (questionOrder.length + 1 === this._currentRound.questions.length) {
+      // add the last question, super slow way but it works
+      for (let i = 0; i < this._currentRound.questions.length; ++i) {
+        if (questionOrder.findIndex(e => e === i) === -1) {
+          questionOrder.push(i);
+        }
+      }
+    }
+
+    logger.debug(`Question order for ${this.code} is now ${questionOrder.join(', ')}`);
+
+    this._currentRound.questionsToAsk = questionOrder;
+  }
+
 }
 
 export const createGameState = (code: string, originalOwner: Player) => {
