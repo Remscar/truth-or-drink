@@ -22,6 +22,7 @@ export interface ToDGameState {
   state: RoundState;
   dealer: Maybe<PlayerInfo>;
   currentRound: Maybe<Round>;
+  scores: {[name: string]: number | undefined}
 }
 
 export interface CompleteGameStateDto extends Dto, ToDGameState {

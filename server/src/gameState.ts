@@ -12,6 +12,8 @@ export class GameState extends BaseGameState {
 
   private _currentRound: Maybe<Round> = null;
 
+  private _scores: {[name: string]: number | undefined} = {};
+
   public constructor(public code: string, owner: Player) {
     super(code, owner);
   }
@@ -25,8 +27,24 @@ export class GameState extends BaseGameState {
     return foundDealer;
   }
 
+  public async joinGame(player: Player) {
+    const couldJoin = super.joinGame(player);
+
+    if (!couldJoin) {
+      return false;
+    }
+
+    if (!this._scores[player.name]) {
+      this._scores[player.name] = 0;
+    }
+
+    return true;
+  }
+
   public async removePlayerFromGame(player: Player) {
     const shouldDestroy = await super.removePlayerFromGame(player);
+
+    this._scores[player.name] = undefined;
 
     this.sendGameState();
 
@@ -62,7 +80,8 @@ export class GameState extends BaseGameState {
       })),
       state: this._roundState,
       dealer: toPlayerInfo(this.dealer),
-      currentRound: this._currentRound
+      currentRound: this._currentRound,
+      scores: this._scores,
     }
 
     return state;
@@ -144,6 +163,14 @@ export class GameState extends BaseGameState {
     return nextDealer;
   }
 
+  protected async addToPlayerScore(player: PlayerInfo, score: number) {
+    const currentScore = this._scores[player.name];
+    let newScore =  currentScore ? currentScore : 0;
+    newScore += score;
+
+    this._scores[player.name] = score;
+  }
+
   public async playerAnsweredQuestion(didAnswer: boolean) {
     if (this._roundState != "asking") {
       throw Error(`Not in the asking state`)
@@ -153,11 +180,13 @@ export class GameState extends BaseGameState {
       throw Error("no current round!");
     }
 
-    didAnswer; // not actually doing anything with this yet
-
-    if (this._currentRound.turn === undefined) {
+    if (this._currentRound.turn === undefined || !this._currentRound.players) {
       throw Error("invalid game state");
     }
+
+    const answeringPlayer = this._currentRound.players[this._currentRound.turn];
+
+    this.addToPlayerScore(answeringPlayer, didAnswer ? 0 : -1);
 
     const nextTurn = this._currentRound.turn + 1;
 
@@ -179,6 +208,8 @@ export class GameState extends BaseGameState {
     if (!this._currentRound) {
       throw Error("no current round!");
     }
+
+    this.addToPlayerScore(winner, 1);
 
     logger.debug(`${winner.name} won the round.`);
 

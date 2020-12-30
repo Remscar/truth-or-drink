@@ -29,7 +29,7 @@ export abstract class BaseGameState {
     return foundOwner;
   }
 
-  public joinGame = async (player: Player) => {
+  public async joinGame(player: Player) {
     const joinedRooms = Array.from(player.socket.rooms.values());
     for (const room of joinedRooms) {
       player.socket.leave(room);
