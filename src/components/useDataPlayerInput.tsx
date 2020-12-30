@@ -43,6 +43,7 @@ export const useDataPlayerInput = (): PlayerInput => {
             onChange={onNameChanged}
             helperText={nameHelperText}
             fullWidth
+            autoComplete={'off'}
           />
         </Grid>
       </Grid>

@@ -41,6 +41,7 @@ export const useGameCodeInput = (): GameCodeInput => {
             onChange={onCodeChanged}
             helperText={codeHelperText}
             fullWidth
+            autoComplete={'off'}
           />
         </Grid>
       </Grid>
