@@ -26,19 +26,19 @@ export const GameRound: React.FC<Props> = (props: Props) => {
     <React.Fragment>
       {leaveGameLogic.component}
       <Grid container direction="column" spacing={2}>
-        <Grid item>
+        {/* <Grid item>
           <Typography variant="h3" align="center">
             Truth or Drink
           </Typography>
-        </Grid>
-        <Grid item>
-          <Typography variant="h4" align="center">
-            {currentGame.gameCode}
-          </Typography>
-        </Grid>
+        </Grid> */}
         <Grid item>{stateElement}</Grid>
-        <Grid item container direction="column" xs={12}>
-          <Grid item style={{paddingTop: '64px'}}>
+        <Grid item container direction="column" style={{paddingTop: '64px'}}>
+          <Grid item>
+            <Typography variant="h4" align="center">
+              {currentGame.gameCode}
+            </Typography>
+          </Grid>
+          <Grid item>
             <StyledButton
               fullWidth
               color="gray"
