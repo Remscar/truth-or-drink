@@ -94,7 +94,7 @@ export const registerNewClientConnection = (socket: Socket) => {
       return;
     }
 
-    if (game.getOwner().socket.id !== player.socket.id) {
+    if (game.owner.socket.id !== player.socket.id) {
       logger.warn(`${player.name} just is starting the game that they aren't the owner of.`);
       return;
     }
