@@ -12,8 +12,8 @@ const useStyles = makeStyles((theme) => ({
   question0: {},
   question1: {},
   playersListStart: {
-    paddingTop: "12px"
-  }
+    paddingTop: "12px",
+  },
 }));
 
 export const DealerChoosing: React.FC = (props) => {
@@ -39,7 +39,7 @@ export const DealerChoosing: React.FC = (props) => {
 
   const onContinue = async () => {
     await gameState.choosePlayers(playerList.selectedPlayers);
-  }
+  };
 
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -80,7 +80,14 @@ export const DealerChoosing: React.FC = (props) => {
           </Grid>
           <Grid item>{playerList.component}</Grid>
           <Grid item>
-            <StyledButton fullWidth color="red" onClick={onContinue} disabled={!canContinue} >Continue</StyledButton>
+            <StyledButton
+              fullWidth
+              color="red"
+              onClick={onContinue}
+              disabled={!canContinue}
+            >
+              Continue
+            </StyledButton>
           </Grid>
         </Grid>
       </React.Fragment>
@@ -90,8 +97,12 @@ export const DealerChoosing: React.FC = (props) => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
+            <Typography variant="h3" align="center">
+              Waiting...
+            </Typography>
             <Typography align="center">
-              Waiting {currentDealer.name} to choose who to ask questions to...
+              Waiting for {currentDealer.name} to choose who to ask questions
+              to...
             </Typography>
           </Grid>
           <Grid item className={classes.playersListStart}>

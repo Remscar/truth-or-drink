@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useCurrentGameState, useGameState } from "../../../hooks/useGameState";
 import { PlayerInfo } from "../../../shared";
@@ -14,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-export const AskerChoosing: React.FC = props => {
+export const AskerChoosing: React.FC = (props) => {
   const classes = useStyles();
   const gameState = useGameState();
   const currentGame = useCurrentGameState();
@@ -33,9 +32,8 @@ export const AskerChoosing: React.FC = props => {
     return null;
   }
 
-  
-
   //const isInvolved = involvedPlayers.findIndex(e => e.name === localPlayer.name);
+  const actingPlayer = involvedPlayers[turnIndex];
   const otherPlayer = involvedPlayers.filter((e: PlayerInfo, index: number) => {
     return index !== turnIndex;
   })[0];
@@ -45,9 +43,7 @@ export const AskerChoosing: React.FC = props => {
 
   let displayComponent: Maybe<React.ReactNode> = null;
 
-  const choseQuestion = (index: number) => {
-
-  }
+  const choseQuestion = (index: number) => {};
 
   if (isPlayerTurn) {
     displayComponent = (
@@ -80,22 +76,24 @@ export const AskerChoosing: React.FC = props => {
               );
             })}
           </Grid>
-          <Grid item>
-            <Typography align="center">
+          <Grid item style={{paddingTop: '24px'}}>
+            <Typography align="center" >
               Select which question they should answer:
             </Typography>
           </Grid>
-          <Grid item container direction="row" justify="space-around">
+          <Grid item container direction="row" justify="space-around" style={{paddingTop: '24px'}}>
             {questions.map((question: string, index: number) => {
-              const color = index ? 'blue' : 'red';
+              const color = index ? "blue" : "red";
               return (
-                <StyledButton color={color} onClick={() => choseQuestion(index)}>
+                <StyledButton
+                  color={color}
+                  onClick={() => choseQuestion(index)}
+                >
                   {`Question ${alphabet[index]}`}
                 </StyledButton>
               );
             })}
           </Grid>
-
         </Grid>
       </React.Fragment>
     );
@@ -104,8 +102,11 @@ export const AskerChoosing: React.FC = props => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
+            <Typography variant="h3" align="center">
+              Waiting...
+            </Typography>
             <Typography align="center">
-              Choose two players to ask the following questions to.
+              {`${actingPlayer.name} is choosing which question they want to ask ${otherPlayer.name}.`}
             </Typography>
           </Grid>
         </Grid>
