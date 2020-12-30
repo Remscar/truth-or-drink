@@ -16,6 +16,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": false,
-    "noEmit": true,
-  }
+  },
+  "include": [
+    "src",
+    "server.ts",
+    "../src/shared"
+  ]
 }
