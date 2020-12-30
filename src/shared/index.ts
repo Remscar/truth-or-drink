@@ -5,7 +5,7 @@ export interface PlayerInfo {
   owner?: boolean;
 }
 
-export type RoundState = "waiting" | "dealing" | "choosing" | "asking";
+export type RoundState = "waiting" | "dealing" | "choosing" | "asking" | "scoring" | "scores";
 
 export interface Round {
   questions: [string, string];
@@ -63,4 +63,16 @@ export interface ChoseQuestionDto extends Dto {
 
 export interface PlayerAnsweredDto extends Dto {
   didAnswer: boolean
+}
+
+export interface PlayerLikedDto extends Dto {
+  likedPlayed: PlayerInfo
+}
+
+export interface PlayerChoseWinnerDto extends Dto {
+  winner: PlayerInfo
+}
+
+export interface NextRoundDto extends Dto {
+  
 }

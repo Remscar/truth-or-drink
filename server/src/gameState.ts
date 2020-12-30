@@ -163,13 +163,27 @@ export class GameState extends BaseGameState {
 
     if (nextTurn >= this._currentRound.questions.length) {
       // out of questions in this round, so onto the next
-      this._dealer = this.chooseNextDealer();
-      this.newRound();
+      this._roundState = "scoring";
       return;
     }
 
     // Go to the next turn
     this._currentRound.turn = nextTurn;
+  }
+
+  public async playerChoseWinner(winner: PlayerInfo) {
+    if (this._roundState != "scoring") {
+      throw Error(`Not in the asking state`)
+    }
+
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    logger.debug(`${winner.name} won the round.`);
+
+    this._dealer = this.chooseNextDealer();
+    this.newRound();
   }
 
 }

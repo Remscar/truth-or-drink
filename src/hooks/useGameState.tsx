@@ -10,6 +10,7 @@ import {
   JoinedDto,
   LeaveGameDto,
   PlayerAnsweredDto,
+  PlayerChoseWinnerDto,
   PlayerInfo,
   SelectedPlayersDto,
   ToDGameState,
@@ -37,6 +38,7 @@ export interface GameStateContext {
   choosePlayers: (players: PlayerInfo[]) => Promise<void>;
   choseQuestion: (index: number) => Promise<void>;
   playerAnsweredQuestion: (didAnswer: boolean) => Promise<void>;
+  choseWinner: (winner: PlayerInfo) => Promise<void>;
 }
 
 const gameStateContext = React.createContext<Maybe<GameStateContext>>(null);
@@ -190,10 +192,19 @@ export const GameStateContextProvider: React.FC = (props) => {
   const playerAnsweredQuestion = async (didAnswer: boolean) => {
     const socket = await getSocket();
 
-    const dto: PlayerAnsweredDto ={
+    const dto: PlayerAnsweredDto = {
       didAnswer
     }
     socket.emit("playerAnswered", dto);
+  }
+
+  const choseWinner = async (winner: PlayerInfo) => {
+    const socket = await getSocket();
+
+    const dto: PlayerChoseWinnerDto = {
+      winner
+    }
+    socket.emit('playerChoseWinner', dto);
   }
 
   
@@ -207,7 +218,8 @@ export const GameStateContextProvider: React.FC = (props) => {
       startGame,
       choosePlayers,
       choseQuestion,
-      playerAnsweredQuestion
+      playerAnsweredQuestion,
+      choseWinner
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentGameState]

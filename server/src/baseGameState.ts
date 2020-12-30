@@ -83,7 +83,6 @@ export abstract class BaseGameState {
         const tryDestroy = this.removePlayerFromGame(player);
         tryDestroy && this.destroyGameIfNeeded();
       }
-      
     }, 10 * 1000);
 
     
