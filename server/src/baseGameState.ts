@@ -77,13 +77,21 @@ export abstract class BaseGameState {
   };
 
   public playerDisconnected = async (player: Player) => {
+    this.removePlayerFromGame(player);
+    this.destroyGameIfNeeded();
+  };
+
+  private destroyGameIfNeeded() {
     const connectedPlayers = this.players.filter((e) => e.connected);
 
     if (connectedPlayers.length == 0) {
       logger.log(`All players have left game ${this.code}`);
       gameManager.destroyGame(this.code);
+      return true;
     }
-  };
+
+    return false;
+  }
 
   public removePlayerFromGame = async (player: Player) => {
     const index = this.players.findIndex((e) => e.name === player.name);
@@ -95,6 +103,12 @@ export abstract class BaseGameState {
     }
 
     this.players.splice(index, 1);
+
+    if (this.players.length > 0 && this._owner.name === player.name) {
+      this._owner = this.players[0];
+    }
+
+    return this.destroyGameIfNeeded();
   };
 
   public async startGame() {

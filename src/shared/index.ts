@@ -5,7 +5,7 @@ export interface PlayerInfo {
   owner?: boolean;
 }
 
-export type RoundState = "waiting" | "start";
+export type RoundState = "waiting" | "choosing";
 
 export interface Round {
   questions: [string, string];

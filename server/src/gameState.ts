@@ -66,7 +66,7 @@ export class GameState extends BaseGameState {
 
     // choose round type
     const newRound = getRoundData();
-    this._roundState = "start";
+    this._roundState = "choosing";
     this._currentRound = newRound;
   }
 

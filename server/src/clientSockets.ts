@@ -81,8 +81,10 @@ export const registerNewClientConnection = (socket: Socket) => {
     try {
       logger.log(`Player ${player.name} is leaving game ${game.code}`);
 
-      await game.removePlayerFromGame(player);
-      game.sendGameState();
+      const wasDestroyed = await game.removePlayerFromGame(player);
+      if (!wasDestroyed) {
+        game.sendGameState();
+      }
 
       game = null;
       player = null;
