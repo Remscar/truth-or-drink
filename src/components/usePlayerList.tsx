@@ -1,4 +1,11 @@
-import { Grid, List, ListItem, ListItemText, makeStyles, Typography } from "@material-ui/core";
+import {
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  makeStyles,
+  Typography,
+} from "@material-ui/core";
 import React from "react";
 import { useCurrentGameState } from "../hooks/useGameState";
 import { PlayerInfo } from "../shared";
@@ -12,21 +19,20 @@ interface PlayerList {
 interface PlayerListOptions {
   showOwner?: boolean;
   selectable?: number;
-  limitedList?: PlayerInfo[]
+  limitedList?: PlayerInfo[];
 }
 
 const useStyles = makeStyles((theme) => ({
-  player: {
-    
-  },
+  player: {},
   selectablePlayer: {
-    marginTop: '12px',
+    marginTop: "12px",
   },
   notSelectedPlayer: {
-    background: 'rgba(0, 0, 0, 0.08)'
+    background: "rgba(0, 0, 0, 0.08)",
   },
   selectedPlayer: {
-    background: 'linear-gradient(45deg, rgba(37,180,39,0.2) 30%, rgba(32, 142, 180, 0.4) 90%)'
+    background:
+      "linear-gradient(45deg, rgba(37,180,39,0.2) 30%, rgba(32, 142, 180, 0.4) 90%)",
   },
 }));
 
@@ -42,22 +48,27 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
   let players = options.limitedList ?? currentGame.players;
 
   const playerIsSelected = (p: PlayerInfo) => {
-    const foundIndex = selectedPlayers.findIndex((e: PlayerInfo) => e.name === p.name);
+    const foundIndex = selectedPlayers.findIndex(
+      (e: PlayerInfo) => e.name === p.name
+    );
     return foundIndex > -1;
-  }
+  };
 
   const onSelectPlayer = (selectedPlayerName: string) => {
     if (!options.selectable) {
       throw Error(`Cannot select in this context.`);
     }
-    const selectedPlayer = {name: selectedPlayerName } as PlayerInfo; // why not
+    const selectedPlayer = { name: selectedPlayerName } as PlayerInfo; // why not
 
     const newSelectedPlayers: PlayerInfo[] = Object.assign([], selectedPlayers);
 
     if (playerIsSelected(selectedPlayer)) {
       // deselect the player
-      logger.log(`Deselected ${selectedPlayer.name}`);
-      const index = newSelectedPlayers.indexOf(selectedPlayer);
+
+      const index = newSelectedPlayers.findIndex(
+        (e) => e.name === selectedPlayer.name
+      );
+      logger.log(`Deselected ${selectedPlayer.name} at index ${index}`);
       newSelectedPlayers.splice(index, 1);
       setSelectedPlayers(newSelectedPlayers);
       return;
@@ -71,7 +82,7 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
     logger.log(`Selected ${selectedPlayer.name}`);
     newSelectedPlayers.push(selectedPlayer);
     setSelectedPlayers(newSelectedPlayers);
-  }
+  };
 
   let component: React.ReactNode = null;
 
@@ -92,15 +103,25 @@ export const usePlayerList = (options: PlayerListOptions): PlayerList => {
           )}
         </Grid> */}
         <List component="nav" aria-label="player list">
-        {players.map((p: PlayerInfo) => {
+          {players.map((p: PlayerInfo) => {
             const isSelected = playerIsSelected(p);
-            const playerGridClasses = `${classes.player} ${classes.selectablePlayer} ${isSelected ? classes.selectedPlayer : classes.notSelectedPlayer}`
+            const playerGridClasses = `${classes.player} ${
+              classes.selectablePlayer
+            } ${
+              isSelected ? classes.selectedPlayer : classes.notSelectedPlayer
+            }`;
             return (
-            <ListItem key={p.name} className={playerGridClasses} button onClick={() => onSelectPlayer(p.name)} selected={isSelected}>
-              <ListItemText primary={p.name} />
-            </ListItem>
-          )}
-          )}
+              <ListItem
+                key={p.name}
+                className={playerGridClasses}
+                button
+                onClick={() => onSelectPlayer(p.name)}
+                selected={isSelected}
+              >
+                <ListItemText primary={p.name} />
+              </ListItem>
+            );
+          })}
         </List>
       </React.Fragment>
     );

@@ -18,8 +18,7 @@ const generateGameCode = () => {
     code = code + randomDigit;
   }
 
-  return "A";
-  //return code;
+  return code;
 }
 
 const getGame = (gameCode: string) => {

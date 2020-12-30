@@ -9,6 +9,9 @@ const useStyles = makeStyles((theme) => ({
   question: {
     padding: "8px",
   },
+  title: {
+    paddingBottom: "32px"
+  }
 }));
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -52,6 +55,9 @@ export const AskerChoosing: React.FC = (props) => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
+            <Typography variant="h3" align="center" className={classes.title}>
+              Choose
+            </Typography>
             <Typography align="center">
               Choose one of the following questions to ask {otherPlayer.name}.
             </Typography>
@@ -73,7 +79,7 @@ export const AskerChoosing: React.FC = (props) => {
                     realClassName ? realClassName : ""
                   }`}
                 >
-                  <Typography>{`Question ${alphabet[index]}`}</Typography>
+                  <Typography style={{fontWeight: 'bold'}}>{`Question ${alphabet[index]}`}</Typography>
                   <Typography>{question}</Typography>
                 </Grid>
               );
@@ -112,7 +118,7 @@ export const AskerChoosing: React.FC = (props) => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
-            <Typography variant="h3" align="center">
+            <Typography variant="h3" align="center" style={{paddingBottom: '12px'}}>
               Waiting...
             </Typography>
             <Typography align="center">

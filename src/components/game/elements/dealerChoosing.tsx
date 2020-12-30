@@ -9,6 +9,9 @@ const useStyles = makeStyles((theme) => ({
   question: {
     padding: "8px",
   },
+  title: {
+    paddingBottom: "32px"
+  },
   question0: {},
   question1: {},
   playersListStart: {
@@ -27,8 +30,13 @@ export const DealerChoosing: React.FC = (props) => {
     localPlayer && currentDealer && playerEquals(localPlayer, currentDealer);
   const numToSelect = 2;
 
+  const playerOptions = currentGame.playerChoices.filter(
+    (e) => e.name !== currentDealer?.name
+  );
+
   const playerList = usePlayerList({
     selectable: canSelect ? numToSelect : 0,
+    limitedList: playerOptions,
   });
 
   if (!currentDealer || !localPlayer || !currentGame.currentRound) {
@@ -50,6 +58,9 @@ export const DealerChoosing: React.FC = (props) => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
+            <Typography variant="h3" align="center" className={classes.title}>
+              Choose
+            </Typography>
             <Typography align="center">
               Choose two players to ask the following questions to.
             </Typography>
@@ -67,7 +78,9 @@ export const DealerChoosing: React.FC = (props) => {
                       realClassName ? realClassName : ""
                     }`}
                   >
-                    <Typography>{`Question ${alphabet[index]}`}</Typography>
+                    <Typography
+                      style={{ fontWeight: "bold" }}
+                    >{`Question ${alphabet[index]}`}</Typography>
                     <Typography>{question}</Typography>
                   </Grid>
                 );
@@ -98,7 +111,7 @@ export const DealerChoosing: React.FC = (props) => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
-            <Typography variant="h3" align="center">
+            <Typography variant="h3" align="center" style={{paddingBottom: '12px'}}>
               Waiting...
             </Typography>
             <Typography align="center">

@@ -30,6 +30,8 @@ export class GameState extends BaseGameState {
   private _timesChosen: { [name: string]: number | undefined } = {};
   private _playerChoices: PlayerInfo[] = [];
 
+  private _lastDealer: Maybe<PlayerInfo> = null;
+
   private _someoneSkippedAnswering = false;
 
   public constructor(public code: string, owner: Player) {
@@ -138,7 +140,7 @@ export class GameState extends BaseGameState {
   }
 
   protected calculatePlayerChoices() {
-    const minNumberPlayers = 2;
+    const minNumberPlayers = 3;
     let maxNumTimesChosen = 1;
     let playerOptions: string[] = [];
 
@@ -161,9 +163,11 @@ export class GameState extends BaseGameState {
         // We have less than needed # of players left to choose from
         if (choosablePlayers.length < minNumberPlayers) {
           playerOptions = playerOptions.concat(choosablePlayers.map(e => e.player));
+          const numAlreadyChosen = playerOptions.length;
+          const extraChoices = minNumberPlayers - numAlreadyChosen
   
           const extraPlayers = playerChosenArray.filter(e => e.timesChosen >= maxNumTimesChosen);
-          for (let i = 0; i < minNumberPlayers && i < extraPlayers.length; ++i) {
+          for (let i = 0; i < extraChoices && i < extraPlayers.length; ++i) {
             playerOptions.push(extraPlayers[i].player);
           }
   
@@ -241,7 +245,15 @@ export class GameState extends BaseGameState {
   }
 
   private chooseNextDealer(): PlayerInfo {
-    const nextDealer = randomElementFromArray(this.players);
+    const dealerOptions = Object.assign([], this.players) as Player[];
+    if (this._lastDealer) {
+      const lastDealerName = this._lastDealer.name;
+      const dealerIndex = dealerOptions.findIndex((e) => e.name === lastDealerName);
+      if (dealerIndex > -1) {
+        dealerOptions.splice(dealerIndex, 1);
+      }
+    }
+    const nextDealer = randomElementFromArray(dealerOptions);
     return nextDealer;
   }
 
@@ -249,6 +261,8 @@ export class GameState extends BaseGameState {
     const currentScore = this._scores[player.name];
     let newScore = currentScore !== undefined ? currentScore : 0;
     newScore += score;
+
+    logger.debug(`${player.name} score ${currentScore} -> ${newScore}`);
 
     this._scores[player.name] = newScore;
   }
@@ -274,9 +288,14 @@ export class GameState extends BaseGameState {
       throw Error("invalid game state");
     }
 
-    const answeringPlayer = this._currentRound.players[this._currentRound.turn];
+    const answeringPlayer = this._currentRound.players[(this._currentRound.turn + 1) % 2];
+    const otherPlayer = this._currentRound.players[this._currentRound.turn];
 
     this.addToPlayerScore(answeringPlayer, didAnswer ? pointsForAnswering : pointsForSkipping);
+
+    if (!didAnswer) {
+      this.addToPlayerScore(otherPlayer, pointsForWinning);
+    }
 
     const nextTurn = this._currentRound.turn + 1;
 
@@ -288,7 +307,9 @@ export class GameState extends BaseGameState {
       // out of questions in this round, so onto the next
 
       if (this._someoneSkippedAnswering) {
+        this._lastDealer = this._dealer;
         this._dealer = this.chooseNextDealer();
+        
 
         this._roundState = "scores";
       } else {
@@ -314,6 +335,7 @@ export class GameState extends BaseGameState {
 
     logger.debug(`${winner.name} won the round.`);
 
+    this._lastDealer = this._dealer;
     this._dealer = this.chooseNextDealer();
 
     this._roundState = "scores";
