@@ -17,7 +17,7 @@ server.listen(port, () => console.log(`Listening on port ${port}`));
 
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'))
+  res.sendFile(path.join(process.cwd(), 'build', 'index.html'))
 });
 
 app.use('/new', (req, res) => {
@@ -30,6 +30,6 @@ app.use('/join', (req, res) => {
   res.redirect('/');
 });
 
-app.use(express.static(path.join(__dirname, "build")));
+app.use(express.static(path.join(process.cwd(), "build")));
 
 initServerSockets(server);
