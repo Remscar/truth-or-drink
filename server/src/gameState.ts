@@ -35,7 +35,7 @@ export class GameState extends BaseGameState {
         owner: e === ownerPlayer,
       })),
       state: this._roundState,
-      dealer: this.dealer,
+      dealer: this.dealer ? {name: this.dealer.name} : null,
       currentRound: this._currentRound
     };
     logger.debug(`Sending game state to all players in ${this.code}`);
@@ -44,12 +44,12 @@ export class GameState extends BaseGameState {
     socket.emit("completeGameState", dto);
   };
 
-  public startGame = async () => {
+  public async startGame() {
     super.startGame();
     this._dealer = this.owner;
   };
 
-  public startRound = () => {
+  public async newRound() {
     if (this._roundState != "waiting") {
       throw Error(`Tried to start a round when one is already going`);
     }
@@ -60,7 +60,6 @@ export class GameState extends BaseGameState {
     this._currentRound = newRound;
   }
 
-  
 }
 
 export const createGameState = (code: string, originalOwner: Player) => {

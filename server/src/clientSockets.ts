@@ -100,6 +100,7 @@ export const registerNewClientConnection = (socket: Socket) => {
     }
 
     await game.startGame();
+    await game.newRound();
 
     game.sendGameState();
   })

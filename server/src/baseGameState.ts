@@ -97,7 +97,7 @@ export abstract class BaseGameState {
     this.players.splice(index, 1);
   };
 
-  public startGame = async () => {
+  public async startGame() {
     logger.log(`Game ${this.code} is starting...`);
     this._started = true;
   };
