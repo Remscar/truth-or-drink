@@ -4,7 +4,7 @@ import { useCurrentGameState, useGameState } from "../../hooks/useGameState";
 import { useLeaveGame } from "../../hooks/useLeaveGame";
 import { getLogger, Maybe } from "../../util";
 import { StyledButton } from "../button";
-import { AskerChoosing, DealerChoosing } from "./elements";
+import { AskerChoosing, AskingQuestion, DealerChoosing } from "./elements";
 
 interface Props {}
 
@@ -21,6 +21,8 @@ export const GameRound: React.FC<Props> = (props: Props) => {
     stateElement = <DealerChoosing />;
   } else if (currentGame.state === "choosing") {
     stateElement = <AskerChoosing />;
+  } else if (currentGame.state === "asking") {
+    stateElement = <AskingQuestion />;
   }
 
   return (
