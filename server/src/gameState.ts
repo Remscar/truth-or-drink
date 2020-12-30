@@ -28,6 +28,8 @@ export class GameState extends BaseGameState {
   public async removePlayerFromGame(player: Player) {
     const shouldDestroy = await super.removePlayerFromGame(player);
 
+    this.sendGameState();
+
     if (shouldDestroy) {
       return shouldDestroy;
     }

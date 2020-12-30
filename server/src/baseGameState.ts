@@ -79,6 +79,7 @@ export abstract class BaseGameState {
   public playerDisconnected = async (player: Player) => {
     setTimeout(() => {
       if (this) {
+        logger.log(`post disconnect trigger`);
         const tryDestroy = this.removePlayerFromGame(player);
         tryDestroy && this.destroyGameIfNeeded();
       }
@@ -109,6 +110,8 @@ export abstract class BaseGameState {
       );
       return false;
     }
+
+    player.socket.leave(this.code);
 
     this.players.splice(index, 1);
 
