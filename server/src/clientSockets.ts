@@ -166,6 +166,18 @@ export const registerNewClientConnection = (socket: Socket) => {
     game.sendGameState();
   });
 
+  socket.on('playerStartNextRound', async () => {
+    if (!player || !game) {
+      return;
+    }
+
+    logger.log(`${player.name} is starting the next round`);
+
+    await game.startNextRound();
+
+    game.sendGameState();
+  })
+
 
 }
 

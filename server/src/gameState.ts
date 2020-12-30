@@ -1,4 +1,12 @@
-import { CompleteGameStateDto, getLogger, Maybe, PlayerInfo, Round, RoundState, ToDGameState } from "../util";
+import {
+  CompleteGameStateDto,
+  getLogger,
+  Maybe,
+  PlayerInfo,
+  Round,
+  RoundState,
+  ToDGameState,
+} from "../util";
 import { randomElementFromArray, toPlayerInfo } from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
@@ -12,7 +20,9 @@ export class GameState extends BaseGameState {
 
   private _currentRound: Maybe<Round> = null;
 
-  private _scores: {[name: string]: number | undefined} = {};
+  private _scores: { [name: string]: number | undefined } = {};
+
+  private _someoneSkippedAnswering = false;
 
   public constructor(public code: string, owner: Player) {
     super(code, owner);
@@ -56,9 +66,10 @@ export class GameState extends BaseGameState {
       this._dealer = this.players[0];
       this.newRound();
       this.sendGameState();
-    }
-    else if (this._currentRound && this._currentRound.players) {
-      const foundIndex = this._currentRound.players.findIndex(e => e.name === player.name);
+    } else if (this._currentRound && this._currentRound.players) {
+      const foundIndex = this._currentRound.players.findIndex(
+        (e) => e.name === player.name
+      );
       if (foundIndex > -1) {
         this.newRound();
         this.sendGameState();
@@ -82,7 +93,7 @@ export class GameState extends BaseGameState {
       dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound,
       scores: this._scores,
-    }
+    };
 
     return state;
   }
@@ -90,7 +101,7 @@ export class GameState extends BaseGameState {
   public sendGameState = () => {
     const currentState = this.currentGameState();
     const dto: CompleteGameStateDto = {
-      ...currentState
+      ...currentState,
     };
     logger.debug(`Sending game state to all players in ${this.code}`);
 
@@ -101,7 +112,7 @@ export class GameState extends BaseGameState {
   public async startGame() {
     super.startGame();
     this._dealer = this.owner;
-  };
+  }
 
   public async newRound() {
     // if (this._roundState != "waiting") {
@@ -112,11 +123,13 @@ export class GameState extends BaseGameState {
     const newRound = getRoundData();
     this._roundState = "dealing";
     this._currentRound = newRound;
+
+    this._someoneSkippedAnswering = false;
   }
 
   public async playersChosen(players: PlayerInfo[]) {
     if (this._roundState != "dealing") {
-      throw Error(`Not choosing state`)
+      throw Error(`Not choosing state`);
     }
 
     if (!this._currentRound) {
@@ -132,7 +145,7 @@ export class GameState extends BaseGameState {
 
   public async playerChoseQuestion(index: number) {
     if (this._roundState != "choosing") {
-      throw Error(`Not choosing state`)
+      throw Error(`Not choosing state`);
     }
 
     if (!this._currentRound) {
@@ -143,17 +156,19 @@ export class GameState extends BaseGameState {
 
     const questionOrder: number[] = this._currentRound.questionsToAsk ?? [];
     questionOrder.push(index);
-    
+
     if (questionOrder.length + 1 === this._currentRound.questions.length) {
       // add the last question, super slow way but it works
       for (let i = 0; i < this._currentRound.questions.length; ++i) {
-        if (questionOrder.findIndex(e => e === i) === -1) {
+        if (questionOrder.findIndex((e) => e === i) === -1) {
           questionOrder.push(i);
         }
       }
     }
 
-    logger.debug(`Question order for ${this.code} is now ${questionOrder.join(', ')}`);
+    logger.debug(
+      `Question order for ${this.code} is now ${questionOrder.join(", ")}`
+    );
 
     this._currentRound.questionsToAsk = questionOrder;
   }
@@ -165,15 +180,15 @@ export class GameState extends BaseGameState {
 
   protected async addToPlayerScore(player: PlayerInfo, score: number) {
     const currentScore = this._scores[player.name];
-    let newScore =  currentScore ? currentScore : 0;
+    let newScore = currentScore !== undefined ? currentScore : 0;
     newScore += score;
 
-    this._scores[player.name] = score;
+    this._scores[player.name] = newScore;
   }
 
   public async playerAnsweredQuestion(didAnswer: boolean) {
     if (this._roundState != "asking") {
-      throw Error(`Not in the asking state`)
+      throw Error(`Not in the asking state`);
     }
 
     if (!this._currentRound) {
@@ -190,9 +205,20 @@ export class GameState extends BaseGameState {
 
     const nextTurn = this._currentRound.turn + 1;
 
+    if (!didAnswer) {
+      this._someoneSkippedAnswering = true;
+    }
+
     if (nextTurn >= this._currentRound.questions.length) {
       // out of questions in this round, so onto the next
-      this._roundState = "scoring";
+
+      if (this._someoneSkippedAnswering) {
+        this._dealer = this.chooseNextDealer();
+
+        this._roundState = "scores";
+      } else {
+        this._roundState = "scoring";
+      }
       return;
     }
 
@@ -202,7 +228,7 @@ export class GameState extends BaseGameState {
 
   public async playerChoseWinner(winner: PlayerInfo) {
     if (this._roundState != "scoring") {
-      throw Error(`Not in the asking state`)
+      throw Error(`Not in the asking state`);
     }
 
     if (!this._currentRound) {
@@ -214,9 +240,21 @@ export class GameState extends BaseGameState {
     logger.debug(`${winner.name} won the round.`);
 
     this._dealer = this.chooseNextDealer();
-    this.newRound();
+
+    this._roundState = "scores";
   }
 
+  public async startNextRound() {
+    if (this._roundState != "scores") {
+      throw Error(`Not in the asking state`);
+    }
+
+    if (!this._currentRound) {
+      throw Error("no current round!");
+    }
+
+    this.newRound();
+  }
 }
 
 export const createGameState = (code: string, originalOwner: Player) => {

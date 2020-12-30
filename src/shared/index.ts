@@ -74,6 +74,6 @@ export interface PlayerChoseWinnerDto extends Dto {
   winner: PlayerInfo
 }
 
-export interface NextRoundDto extends Dto {
+export interface PlayerStartNextRound extends Dto {
   
 }
