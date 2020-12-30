@@ -2,7 +2,6 @@ import express from 'express';
 import * as path from 'path';
 import * as http from 'http';
 import { getLogger } from './util';
-import { registerNewClientConnection } from './src';
 import { initServerSockets } from './src/serverSockets';
 
 const app = express();

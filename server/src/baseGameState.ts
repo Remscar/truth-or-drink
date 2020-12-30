@@ -1,18 +1,17 @@
-import { CompleteGameStateDto, getLogger, PlayerInfo } from "../util";
-import { getCard } from "./deck";
+import { getLogger, PlayerInfo } from "../util";
 import { gameManager } from "./games";
 import { Player } from "./player";
 import { socketForRoom } from "./serverSockets";
 
 const logger = getLogger("BaseGameState");
 
-export class BaseGameState {
+export abstract class BaseGameState {
   public readonly players: Player[];
 
   protected _started: boolean = false;
   protected _owner: PlayerInfo;
 
-  constructor(public code: string, owner: Player) {
+  public constructor(public code: string, owner: Player) {
     this.players = [];
     this._owner = owner;
   }

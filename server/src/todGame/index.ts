@@ -1,4 +1,5 @@
-import { randomElementFromArray } from "../util/helpers";
+import { Round } from "../../util";
+import { randomElementFromArray } from "../../util/helpers";
 
 export const NormalQuestions = [
   "Test1",
@@ -7,9 +8,7 @@ export const NormalQuestions = [
   "Test4",
 ]
 
-export interface Round {
-  questions: [string, string];
-}
+
 
 export const getRoundData = () => {
   const q1 = randomElementFromArray(NormalQuestions);

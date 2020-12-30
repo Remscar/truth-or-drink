@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2019",
     "lib": [
       "dom",
       "dom.iterable",
@@ -17,8 +17,5 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "noEmit": true,
-  },
-  "include": [
-    "../src/shared"
-  ]
+  }
 }
