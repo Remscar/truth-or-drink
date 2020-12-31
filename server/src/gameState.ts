@@ -10,7 +10,7 @@ import {
 import { randomElementFromArray, toExistingPlayerInfo, toPlayerInfo } from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
-import { getRoundData } from "./todGame";
+import { TruthOrDrinkGame } from "./todGame";
 
 const logger = getLogger("gameState");
 
@@ -34,8 +34,12 @@ export class GameState extends BaseGameState {
 
   private _someoneSkippedAnswering = false;
 
+  private _game: TruthOrDrinkGame;
+
   public constructor(public code: string, owner: Player) {
     super(code, owner);
+
+    this._game = new TruthOrDrinkGame(['rocks', 'spicy']);
   }
 
   public get dealer(): Maybe<Player> {
@@ -182,7 +186,7 @@ export class GameState extends BaseGameState {
 
   public async newRound() {
     // choose round type
-    const newRound = getRoundData();
+    const newRound = this._game.nextRound();
 
     this.calculatePlayerChoices();
     this._roundState = "dealing";
