@@ -32,13 +32,13 @@ export const GameRound: React.FC<Props> = (props: Props) => {
   return (
     <React.Fragment>
       {leaveGameLogic.component}
-      <Grid container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2} style={{flexGrow: 1}}>
         {/* <Grid item>
           <Typography variant="h3" align="center">
             Truth or Drink
           </Typography>
         </Grid> */}
-        <Grid item>{stateElement}</Grid>
+        <Grid item style={{flexGrow: 1}}>{stateElement}</Grid>
         <Grid item container direction="column" style={{paddingTop: '64px'}}>
           <Grid item>
             <Typography variant="h4" align="center">

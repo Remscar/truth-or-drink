@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
     // textAlign: "left",
     paddingTop: "50px",
     display: "flex",
-    minHeight: "100vh",
+    minHeight: "calc(100vh - 50px)",
     flexDirection: "column"
   },
 }));
