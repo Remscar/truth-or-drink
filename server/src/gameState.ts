@@ -1,5 +1,6 @@
 import {
   CompleteGameStateDto,
+  DeckTypes,
   getLogger,
   Maybe,
   PlayerInfo,
@@ -36,10 +37,10 @@ export class GameState extends BaseGameState {
 
   private _game: TruthOrDrinkGame;
 
-  public constructor(public code: string, owner: Player) {
+  public constructor(public code: string, owner: Player, decks?: DeckTypes[]) {
     super(code, owner);
 
-    this._game = new TruthOrDrinkGame(['rocks', 'spicy']);
+    this._game = new TruthOrDrinkGame(decks ?? ['rocks', 'spicy']);
   }
 
   public get dealer(): Maybe<Player> {

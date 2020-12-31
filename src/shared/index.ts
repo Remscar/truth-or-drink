@@ -1,5 +1,7 @@
 type Maybe<T> = T | null;
 
+export type DeckTypes = "spicy" | "rocks";
+
 export interface PlayerInfo {
   name: string;
   owner?: boolean;
@@ -37,6 +39,7 @@ export interface Dto {
 
 export interface CreateDto extends Dto {
   creator: PlayerInfo;
+  decks?: DeckTypes[];
 }
 
 export interface CreatedDto extends CompleteGameStateDto {

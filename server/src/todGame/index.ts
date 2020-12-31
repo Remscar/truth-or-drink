@@ -1,4 +1,4 @@
-import { getLogger, Maybe, Round } from "../../util";
+import { DeckTypes, getLogger, Maybe, Round } from "../../util";
 import { randomElementFromArray } from "../../util/helpers";
 
 import * as fs from 'fs';
@@ -6,7 +6,7 @@ import * as path from 'path';
 
 const logger = getLogger(`TruthOrDrinkGame`);
 
-export type DeckTypes = "spicy" | "rocks";
+
 
 const getNormalDeck = (name: DeckTypes): string[] => {
   let rawDeck: Maybe<string> = null;
