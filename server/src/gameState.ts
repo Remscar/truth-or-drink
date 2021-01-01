@@ -81,6 +81,7 @@ export class GameState extends BaseGameState {
 
     this._scores[player.name] = undefined;
     this._likes[player.name] = undefined;
+    this._timesChosen[player.name] = undefined;
 
     if (shouldDestroy) {
       return shouldDestroy;
