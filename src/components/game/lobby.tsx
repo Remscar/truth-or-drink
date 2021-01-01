@@ -21,7 +21,7 @@ export const GameLobby: React.FC = (props) => {
   return (
     <React.Fragment>
       {leaveGameLogic.component}
-      <Grid container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2} style={{flexGrow: 1}}>
         <Grid item>
           <Typography variant="h3" align="center">
             Lobby
@@ -32,7 +32,7 @@ export const GameLobby: React.FC = (props) => {
             {currentGame.gameCode}
           </Typography>
         </Grid>
-        <Grid item container direction="column" xs={12}>
+        <Grid item container direction="column" style={{flexGrow: 1}}>
           <Grid item>
             <Typography align="center" variant="subtitle2">
               Players:

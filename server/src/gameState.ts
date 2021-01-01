@@ -279,7 +279,7 @@ export class GameState extends BaseGameState {
     this._likes[player.name] = newLikes;
   }
 
-  public async playerAnsweredQuestion(didAnswer: boolean) {
+  public async playerAnsweredQuestion(didAnswer: boolean, player: PlayerInfo) {
     if (this._roundState != "asking") {
       throw Error(`Not in the asking state`);
     }
@@ -294,6 +294,11 @@ export class GameState extends BaseGameState {
 
     const answeringPlayer = this._currentRound.players[(this._currentRound.turn + 1) % 2];
     const otherPlayer = this._currentRound.players[this._currentRound.turn];
+    
+    if (answeringPlayer.name !== player.name) {
+      logger.warn(`Ignoring player answer since it's the wrong player`);
+      return;
+    }
 
     this.addToPlayerScore(answeringPlayer, didAnswer ? pointsForAnswering : pointsForSkipping);
 

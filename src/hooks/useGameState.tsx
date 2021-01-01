@@ -39,7 +39,7 @@ export interface GameStateContext {
   startGame: () => void;
   choosePlayers: (players: PlayerInfo[]) => Promise<void>;
   choseQuestion: (index: number) => Promise<void>;
-  playerAnsweredQuestion: (didAnswer: boolean) => Promise<void>;
+  playerAnsweredQuestion: (didAnswer: boolean, player: PlayerInfo) => Promise<void>;
   choseWinner: (winner: PlayerInfo) => Promise<void>;
   startNewRound: () => Promise<void>;
   likeAnswer: (player: PlayerInfo) => Promise<void>;
@@ -194,11 +194,12 @@ export const GameStateContextProvider: React.FC = (props) => {
     socket.emit('choseQuestion', dto);
   }
 
-  const playerAnsweredQuestion = async (didAnswer: boolean) => {
+  const playerAnsweredQuestion = async (didAnswer: boolean, player: PlayerInfo) => {
     const socket = await getSocket();
 
     const dto: PlayerAnsweredDto = {
-      didAnswer
+      didAnswer,
+      player
     }
     socket.emit("playerAnswered", dto);
   }

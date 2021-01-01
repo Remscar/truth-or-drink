@@ -143,11 +143,11 @@ export const registerNewClientConnection = (socket: Socket) => {
       return;
     }
 
-    logger.log(`${player.name} says that the asked person ${data.didAnswer ? "did" : "did not"} answer the question.`);
+    logger.log(`${player.name} says that ${data.player.name} ${data.didAnswer ? "did" : "did not"} answer the question.`);
 
     // no security here either, i'm on a timeline here
 
-    await game.playerAnsweredQuestion(data.didAnswer);
+    await game.playerAnsweredQuestion(data.didAnswer, data.player);
 
     game.sendGameState();
 

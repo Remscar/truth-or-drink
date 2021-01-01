@@ -74,6 +74,7 @@ export interface ChoseQuestionDto extends Dto {
 
 export interface PlayerAnsweredDto extends Dto {
   didAnswer: boolean
+  player: PlayerInfo
 }
 
 export interface PlayerAnswerLikedDto extends Dto {

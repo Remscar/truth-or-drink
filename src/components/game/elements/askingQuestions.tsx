@@ -52,7 +52,7 @@ export const AskingQuestion: React.FC = (props) => {
   const askedQuestion = round.questions[questionIndexToAsk];
 
   const playerAnswered = async (didTheyAnswer: boolean) => {
-    await gameState.playerAnsweredQuestion(didTheyAnswer);
+    await gameState.playerAnsweredQuestion(didTheyAnswer, otherPlayer);
   };
 
   const onLikeAnswer = async () => {
