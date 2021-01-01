@@ -77,7 +77,7 @@ export const AskingQuestion: React.FC = (props) => {
             </Typography>
           </Grid>
           <Grid item className={classes.question}>
-            <Typography align="center">{askedQuestion}</Typography>
+            <Typography align="center" style={{fontWeight: 'bold'}}>{askedQuestion}</Typography>
           </Grid>
 
           <Grid item style={{ paddingTop: "72px" }}>
