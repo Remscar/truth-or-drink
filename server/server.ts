@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as http from 'http';
 import { getLogger } from './util';
 import { initServerSockets } from './src/serverSockets';
+import sslRedirect from 'heroku-ssl-redirect';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -15,6 +16,7 @@ logger.log(`Starting server`);
 // console.log that your server is up and running
 server.listen(port, () => console.log(`Listening on port ${port}`));
 
+app.use(sslRedirect());
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'build', 'index.html'))
