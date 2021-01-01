@@ -1,6 +1,5 @@
 import React from "react";
 import { useCurrentGameState, useGameState } from "../../../hooks/useGameState";
-import { PlayerInfo } from "../../../shared";
 import { Maybe } from "../../../util";
 import { Grid, makeStyles, Typography } from "@material-ui/core";
 import { StyledButton } from "../../button";

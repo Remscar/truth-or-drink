@@ -25,7 +25,7 @@ export const AppRouter: React.FC = (props) => {
   const classes = useStyles();
 
   return (
-    <div >
+    <div style={{height: '100vh'}}>
       <Container maxWidth="md" className={classes.root}>
         <BrowserRouter>
           <Switch>

@@ -21,6 +21,13 @@ const deckNames = {
   Spicy: "Dirty Cards",
   Rocks: "Chill cards",
   Happy: "Feel good cards",
+  PG13: "PG-13",
+  RatedR: "Rated R",
+  PG: "PG",
+  Friends: "HobbyLark for Friends",
+  OverText: "HobbyLark Over Text",
+  WildCards: "25 Wild Cards",
+  WildCards2: "25 More Wild Cards"
 }
 
 export const NewGame: React.FC<Props> = (props: Props) => {

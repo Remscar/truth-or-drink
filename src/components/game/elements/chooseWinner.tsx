@@ -4,8 +4,6 @@ import { PlayerInfo } from "../../../shared";
 import { Maybe } from "../../../util";
 import { Grid, makeStyles, Typography } from "@material-ui/core";
 import { StyledButton } from "../../button";
-import { NumberLiteralType } from "typescript";
-import { EOF } from "dns";
 
 const useStyles = makeStyles((theme) => ({
   title: {

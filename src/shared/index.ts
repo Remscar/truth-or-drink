@@ -3,7 +3,14 @@ type Maybe<T> = T | null;
 export const DeckTypes = {
   Spicy: "spicy",
   Rocks: "rocks",
-  Happy: "happy"
+  Happy: "happy",
+  PG: "pg",
+  PG13: "pg13",
+  RatedR: "ratedr",
+  Friends: "friends",
+  OverText: "overtext",
+  WildCards: "wildcards",
+  WildCards2: "wildcards2",
 }
 
 export interface PlayerInfo {

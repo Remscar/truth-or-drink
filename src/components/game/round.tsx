@@ -2,13 +2,13 @@ import { Grid, Typography } from "@material-ui/core";
 import * as React from "react";
 import { useCurrentGameState, useGameState } from "../../hooks/useGameState";
 import { useLeaveGame } from "../../hooks/useLeaveGame";
-import { getLogger, Maybe } from "../../util";
+import { Maybe } from "../../util";
 import { StyledButton } from "../button";
 import { AskerChoosing, AskingQuestion, ChooseWinner, DealerChoosing, ScorePage } from "./elements";
 
 interface Props {}
 
-const logger = getLogger("game::GameRound");
+// const logger = getLogger("game::GameRound");
 
 export const GameRound: React.FC<Props> = (props: Props) => {
   const gameState = useGameState();
