@@ -16,7 +16,7 @@ logger.log(`Starting server`);
 // console.log that your server is up and running
 server.listen(port, () => console.log(`Listening on port ${port}`));
 
-app.use(sslRedirect());
+
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'build', 'index.html'))
@@ -35,3 +35,5 @@ app.use('/join', (req, res) => {
 app.use(express.static(path.join(process.cwd(), "build")));
 
 initServerSockets(server);
+
+app.use(sslRedirect());
