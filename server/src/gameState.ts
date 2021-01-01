@@ -398,6 +398,6 @@ export class GameState extends BaseGameState {
   }
 }
 
-export const createGameState = (code: string, originalOwner: Player) => {
-  return new GameState(code, originalOwner);
+export const createGameState = (code: string, originalOwner: Player, decks?: string[]) => {
+  return new GameState(code, originalOwner, decks);
 };

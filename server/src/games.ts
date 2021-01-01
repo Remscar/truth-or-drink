@@ -25,14 +25,14 @@ const getGame = (gameCode: string) => {
   return games.get(gameCode);
 }
 
-const createNewGame = async (creator: Player) => {
+const createNewGame = async (creator: Player, decks?: string[]) => {
   const gameCode = generateGameCode();
 
   logger.log(`Creating game for ${creator.name} with code ${gameCode}`);
 
   let newGameState: Maybe<GameState> = null;
   if (!games.has(gameCode)) {
-    newGameState = createGameState(gameCode, creator);
+    newGameState = createGameState(gameCode, creator, decks);
     games.set(gameCode, newGameState);
   } else {
     const game = games.get(gameCode);

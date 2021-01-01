@@ -20,7 +20,7 @@ export const registerNewClientConnection = (socket: Socket) => {
     logger.log(`${data.creator.name} requests to create a game.`);
 
     player = createPlayer(data.creator.name, socket);
-    const createdGame = await gameManager.createNewGame(player);
+    const createdGame = await gameManager.createNewGame(player, data.decks);
 
     const response: CreatedDto = {
       ...createdGame.currentGameState()
