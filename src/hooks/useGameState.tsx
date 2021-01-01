@@ -30,7 +30,7 @@ export interface GameState extends ToDGameState {
 export interface GameStateContext {
   currentGame: Maybe<GameState>;
   playerInfo: Maybe<PlayerInfo>;
-  createGame: (player: PlayerInfo) => Promise<string>;
+  createGame: (player: PlayerInfo, decks: string[]) => Promise<string>;
   joinGame: (
     player: PlayerInfo,
     gameCode: string
@@ -134,12 +134,13 @@ export const GameStateContextProvider: React.FC = (props) => {
     });
   };
 
-  const createGame = async (player: PlayerInfo) => {
+  const createGame = async (player: PlayerInfo, decks: string[]) => {
     logger.log(`Creating game for ${player.name}`);
 
     const socket = await getSocket();
     const dto: CreateDto = {
       creator: player,
+      decks
     };
     socket.emit("create", dto);
 

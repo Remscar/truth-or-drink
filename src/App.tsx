@@ -5,6 +5,11 @@ import { GlobalProviders } from "./GlobalProviders";
 import { WaitForGameState } from "./hooks/useGameState";
 
 function App() {
+
+  React.useEffect(() => {
+    document.title = "Truth Or Drink Online"
+ }, []);
+
   return (
     <CssBaseline>
       <GlobalProviders>

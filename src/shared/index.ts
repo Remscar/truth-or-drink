@@ -1,6 +1,10 @@
 type Maybe<T> = T | null;
 
-export type DeckTypes = "spicy" | "rocks";
+export const DeckTypes = {
+  Spicy: "spicy",
+  Rocks: "rocks",
+  Happy: "happy"
+}
 
 export interface PlayerInfo {
   name: string;
@@ -39,7 +43,7 @@ export interface Dto {
 
 export interface CreateDto extends Dto {
   creator: PlayerInfo;
-  decks?: DeckTypes[];
+  decks?: string[];
 }
 
 export interface CreatedDto extends CompleteGameStateDto {

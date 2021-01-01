@@ -1,4 +1,4 @@
-import { DeckTypes, getLogger, Maybe, Round } from "../../util";
+import { getLogger, Maybe, Round } from "../../util";
 import { randomElementFromArray } from "../../util/helpers";
 
 import * as fs from 'fs';
@@ -8,7 +8,7 @@ const logger = getLogger(`TruthOrDrinkGame`);
 
 
 
-const getNormalDeck = (name: DeckTypes): string[] => {
+const getNormalDeck = (name: string): string[] => {
   let rawDeck: Maybe<string> = null;
   try {
     rawDeck = fs.readFileSync(path.join(__dirname, 'questions', `${name}.txt`)).toString();
@@ -24,7 +24,7 @@ export class TruthOrDrinkGame {
   private questions: string[] = [];
 
 
-  constructor(decks: DeckTypes[]) {
+  constructor(decks: string[]) {
     for (const deck of decks) {
       const deckQuestions = getNormalDeck(deck);
       this.questions = this.questions.concat(deckQuestions);

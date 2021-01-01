@@ -37,10 +37,10 @@ export class GameState extends BaseGameState {
 
   private _game: TruthOrDrinkGame;
 
-  public constructor(public code: string, owner: Player, decks?: DeckTypes[]) {
+  public constructor(public code: string, owner: Player, decks?: string[]) {
     super(code, owner);
 
-    this._game = new TruthOrDrinkGame(decks ?? ['rocks', 'spicy']);
+    this._game = new TruthOrDrinkGame(decks ?? [DeckTypes.Rocks, DeckTypes.Spicy, DeckTypes.Happy]);
   }
 
   public get dealer(): Maybe<Player> {
