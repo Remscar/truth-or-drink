@@ -11,7 +11,7 @@ const logger = getLogger(`TruthOrDrinkGame`);
 const getNormalDeck = (name: string): string[] => {
   let rawDeck: Maybe<string> = null;
   try {
-    rawDeck = fs.readFileSync(path.join(__dirname, 'questions', `${name}.txt`)).toString();
+    rawDeck = fs.readFileSync(path.join(process.cwd(), 'questions', `${name}.txt`)).toString();
   } catch (e) {
     throw Error(`Cannot load deck ${name}: ${e}`);
   }
