@@ -80,7 +80,7 @@ export const AskingQuestion: React.FC = (props) => {
             <Typography align="center">{askedQuestion}</Typography>
           </Grid>
 
-          <Grid item style={{ paddingTop: "24px" }}>
+          <Grid item style={{ paddingTop: "72px" }}>
             <Typography align="center">Did they answer it?</Typography>
           </Grid>
           <Grid
@@ -110,7 +110,7 @@ export const AskingQuestion: React.FC = (props) => {
           <Typography align="center">
             {`${actingPlayer.name} will ask you a question.`}
           </Typography>
-          <Typography align="center">
+          <Typography align="center" style={{paddingTop: '12px'}}>
             {`You can either answer it, or skip (drink.)`}
           </Typography>
           <Grid
@@ -118,7 +118,7 @@ export const AskingQuestion: React.FC = (props) => {
             container
             direction="column"
             justify="center"
-            style={{ paddingTop: "24px" }}
+            style={{ paddingTop: "72px" }}
           >
             <Grid item>
             <StyledButton fullWidth color={"red"} onClick={() => playerAnswered(true)}>

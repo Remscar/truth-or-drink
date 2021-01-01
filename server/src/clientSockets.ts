@@ -183,7 +183,7 @@ export const registerNewClientConnection = (socket: Socket) => {
       return;
     }
 
-    logger.log(`${player.name} liked ${data.player}'s answer`);
+    logger.log(`${player.name} liked ${data.player.name}'s answer`);
 
     await game.playerLikedAnswer(player, data.player);
   })

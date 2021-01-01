@@ -85,7 +85,7 @@ export const AskerChoosing: React.FC = (props) => {
               );
             })}
           </Grid>
-          <Grid item style={{ paddingTop: "24px" }}>
+          <Grid item style={{ paddingTop: "48px" }}>
             <Typography align="center">
               Select which question they should answer:
             </Typography>
