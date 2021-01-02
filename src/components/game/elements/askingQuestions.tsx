@@ -111,8 +111,13 @@ export const AskingQuestion: React.FC = (props) => {
             {`${actingPlayer.name} will ask you a question.`}
           </Typography>
           <Typography align="center" style={{paddingTop: '12px'}}>
-            {`You can either answer it, or skip (drink.)`}
+            You can either answer it, or skip (drink.)
           </Typography>
+
+          <Typography variant="subtitle1" align="center" style={{paddingTop: '24px'}}>
+            Try to give your most authentic, truthful and potentially revealing answer.
+          </Typography>
+
           <Grid
             item
             container
@@ -150,7 +155,7 @@ export const AskingQuestion: React.FC = (props) => {
           </Grid>
           <Grid item style={{paddingTop: "32px"}}>
             <StyledButton disabled={hasLikedAnswer} onClick={onLikeAnswer} color="blue">
-            👍 Answer
+            👍 Like {otherPlayer.name}'s  Answer
             </StyledButton>
           </Grid>
         </Grid>

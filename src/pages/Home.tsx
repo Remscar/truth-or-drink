@@ -1,4 +1,4 @@
-import { Grid, makeStyles, Typography } from "@material-ui/core";
+import { Grid, Link, makeStyles, Typography } from "@material-ui/core";
 import * as React from "react";
 import { StyledButton } from "../components/button";
 
@@ -26,6 +26,12 @@ export const Home: React.FC<Props> = (props: Props) => {
           </Typography>
         </Grid>
         <Grid item>
+          <Typography variant="subtitle2" align="center">
+            The age-old game but now online
+          </Typography>
+        </Grid>
+
+        <Grid item style={{paddingTop: '32px'}}>
           <StyledButton color="red" href="/new" fullWidth>
             New Game
           </StyledButton>
@@ -37,7 +43,7 @@ export const Home: React.FC<Props> = (props: Props) => {
         </Grid>
       </Grid>
       <Typography variant={"subtitle2"} className={classes.bottom} align={"center"}>
-        A website made by Zachary "Remscar" Nawar
+        A website made by Zachary, <Link href={'mailto:contact@truthordrink.party'}>contact me here.</Link>
       </Typography>
     </React.Fragment>
   );

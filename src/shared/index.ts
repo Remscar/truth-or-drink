@@ -33,6 +33,7 @@ export interface Round {
   turn?: number;
   questionsToAsk?: number[];
   likedAnswers?:  {[name: string]: string[]}
+  likesForPlayers?: number[];
 }
 
 export interface ToDGameState {
@@ -45,6 +46,8 @@ export interface ToDGameState {
   currentRound: Maybe<Round>;
   playerChoices: PlayerInfo[];
   playerStates: IMap<PlayerGameState>;
+  someoneSkipped: boolean;
+  timerEnd: number;
 }
 
 export interface CompleteGameStateDto extends Dto, ToDGameState {

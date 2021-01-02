@@ -25,6 +25,8 @@ const pointsForSkipping = -5;
 const pointsForAnswering = 0;
 const pointsForWinning = 5;
 const pointsForLiking = 1;
+const minimumVotingDuration = 30;
+const autoChooseWinner = false;
 
 interface ExtendedPlayerGameState extends PlayerGameState {
   player: Player;
@@ -46,6 +48,10 @@ export class GameState extends BaseGameState {
 
   private _game: TruthOrDrinkGame;
 
+  private _timerEnd: number = 0;
+  private _readyToFinishScoring: boolean = false;
+  private _winnerChosen: boolean = false;
+
   public constructor(public code: string, owner: Player, decks?: string[]) {
     super(code, owner);
 
@@ -60,7 +66,7 @@ export class GameState extends BaseGameState {
       return playerState;
     }
 
-    const playerInstance = this.players.find((e) => e.name === player.name);
+    const playerInstance = this.getPlayers(false).find((e) => e.name === player.name);
 
     if (!playerInstance) {
       throw Error(`Player ${player.name} not in game ${this.code}`);
@@ -96,7 +102,7 @@ export class GameState extends BaseGameState {
   }
 
   public get dealer(): Maybe<Player> {
-    const foundDealer = this.players.find((e) => e.name === this._dealer?.name);
+    const foundDealer = this.getPlayers(false).find((e) => e.name === this._dealer?.name);
     if (!foundDealer) {
       return null;
     }
@@ -128,21 +134,24 @@ export class GameState extends BaseGameState {
     }
 
     this.calculatePlayerChoices();
-    this.sendGameState();
 
     if (this._dealer?.name === player.name) {
-      this._dealer = this.players[0];
+      this._dealer = this.getPlayers(true)[0];
       this.newRound();
-      this.sendGameState();
     } else if (this._currentRound && this._currentRound.players) {
       const foundIndex = this._currentRound.players.findIndex(
         (e) => e.name === player.name
       );
       if (foundIndex > -1) {
         this.newRound();
-        this.sendGameState();
       }
     }
+
+    if (this.getPlayers(true).length < 3) {
+      this.gotoLobby();
+    }
+
+    this.sendGameState();
 
     return false;
   }
@@ -166,19 +175,22 @@ export class GameState extends BaseGameState {
 
   public currentGameState(): ToDGameState {
     const ownerPlayer = this.owner;
+    const safePlayerList = this.getPlayers(true).map((e) => ({
+      name: e.name,
+      owner: e === ownerPlayer,
+    }));
     const state = {
       gameCode: this.code,
       started: this.started,
       owner: ownerPlayer.socket.id,
-      players: this.players.map((e) => ({
-        name: e.name,
-        owner: e === ownerPlayer,
-      })),
+      players: safePlayerList,
       state: this._roundState,
       dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound,
       playerStates: this.createPlayerGameSateForDto(),
       playerChoices: this._playerChoices.map((e) => ({ name: e.name })),
+      timerEnd: this._timerEnd,
+      someoneSkipped: this._someoneSkippedAnswering
     };
 
     return state;
@@ -198,6 +210,8 @@ export class GameState extends BaseGameState {
   public async startGame() {
     super.startGame();
     this._dealer = this.owner;
+    this._readyToFinishScoring = false;
+    this._winnerChosen = false;
   }
 
   private getFewestTimesChosen(): number {
@@ -268,6 +282,7 @@ export class GameState extends BaseGameState {
 
   public async gotoLobby() {
     this._roundState = "waiting";
+    this._started = false;
   }
 
   public async newRound() {
@@ -291,14 +306,15 @@ export class GameState extends BaseGameState {
     }
 
     logger.debug(`Players chosen for ${this.code}`);
+    
+    for (const player of players) {
+      this.getPlayerState(player).timesChosen += 1;
+    }
 
     this._currentRound.players = players;
     this._currentRound.turn = 0;
     this._roundState = "choosing";
-
-    for (const player of players) {
-      this.getPlayerState(player).timesChosen += 1;
-    }
+    this._currentRound.likesForPlayers = this._currentRound.players.map(() => 0);
   }
 
   public async playerChoseQuestion(index: number) {
@@ -329,15 +345,6 @@ export class GameState extends BaseGameState {
     );
 
     this._currentRound.questionsToAsk = questionOrder;
-  }
-
-  private getPlayers(connected = true): Player[] {
-    if (!connected) {
-      return this.players;
-    }
-
-    const connectedPlayers = this.players.filter((e) => e.connected);
-    return connectedPlayers;
   }
 
   private chooseNextDealer(): PlayerInfo {
@@ -415,20 +422,59 @@ export class GameState extends BaseGameState {
 
     if (nextTurn >= this._currentRound.questions.length) {
       // out of questions in this round, so onto the next
-
-      if (this._someoneSkippedAnswering) {
-        this._lastDealer = this._dealer;
-        this._dealer = this.chooseNextDealer();
-
-        this._roundState = "scores";
-      } else {
-        this._roundState = "scoring";
-      }
+      this.beginScoring();
       return;
     }
 
     // Go to the next turn
     this._currentRound.turn = nextTurn;
+  }
+
+  public async beginScoring() {
+    this._roundState = "scoring";
+    this._timerEnd = Date.now() + minimumVotingDuration * 1000;
+    setTimeout(() => {
+      // Move onto next round if dealer has chosen winner already
+      if (this._winnerChosen) {
+        this.finishScoring();
+        this.sendGameState();
+        return;
+      }
+
+      this._readyToFinishScoring = true;
+
+      // If dealer has to choose winner, skip this
+      if (!autoChooseWinner) {
+        return;
+      }
+
+      // No winner chosen yet, choose democratically
+      if (!this._currentRound) {
+        logger.error(`No current round when forcing scoring to finish.`);
+        return;
+      }
+
+      if (!this._currentRound.likesForPlayers || !this._currentRound.players) {
+        logger.error(`Broken game state when forcing scoring to finish.`);
+        return;
+      }
+
+      const votesForPlayers = this._currentRound.likesForPlayers;
+      const playersInRound = this._currentRound.players;
+
+      let winningPlayerIndex = 0;
+      let winningPlayerLikes = 0;
+      for (let i = 0; i < playersInRound.length && i < votesForPlayers.length; ++i) {
+        if (votesForPlayers[i] > winningPlayerLikes) {
+          winningPlayerLikes = votesForPlayers[i];
+          winningPlayerIndex = i;
+        }
+      }
+
+      const winningPlayer = playersInRound[winningPlayerIndex];
+      this.playerChoseWinner(winningPlayer);
+      this.sendGameState();
+    }, minimumVotingDuration * 1000 + 2500); // always have a little grace time
   }
 
   public async playerChoseWinner(winner: PlayerInfo) {
@@ -440,10 +486,26 @@ export class GameState extends BaseGameState {
       throw Error("no current round!");
     }
 
+    if (this._someoneSkippedAnswering) {
+      throw Error(`Can only choose winner if nobody skipped`);
+    }
+
+    if (this._winnerChosen) {
+      throw Error(`Winner has already been chosen.`);
+    }
+
+    this._winnerChosen = true;
+
     this.addToPlayerScore(winner, pointsForWinning);
 
     logger.debug(`${winner.name} won the round.`);
 
+    if (this._readyToFinishScoring) {
+      this.finishScoring();
+    }
+  }
+
+  public async finishScoring() {
     this._lastDealer = this._dealer;
     this._dealer = this.chooseNextDealer();
 
@@ -492,11 +554,22 @@ export class GameState extends BaseGameState {
       throw Error("no current round!");
     }
 
+    if (!this._currentRound.likesForPlayers || !this._currentRound.players) {
+      throw Error(`invalid game state.`);
+    }
+
+    const likedPlayerIndex = this._currentRound.players.findIndex(e => e.name === likedPlayer.name);
+    if (likedPlayerIndex < 0) {
+      throw Error(`Could not find liked player in current round`);
+    }
+
     const playerAnswers = this.getPlayersLikedAnswers(player);
     if (playerAnswers.findIndex((e) => e === likedPlayer.name) < 0) {
       playerAnswers.push(likedPlayer.name);
       this.addToPlayerScore(likedPlayer, pointsForLiking);
       this.addToPlayerLikes(likedPlayer, 1);
+
+      this._currentRound.likesForPlayers[likedPlayerIndex] += 1;
     } else {
       logger.debug(`${player.name} already voted for ${likedPlayer.name}`);
     }

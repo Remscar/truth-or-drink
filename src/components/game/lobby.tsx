@@ -18,6 +18,8 @@ export const GameLobby: React.FC = (props) => {
     gameState.startGame();
   };
 
+  const canStartGame = currentGame.players.length < 3;
+
   return (
     <React.Fragment>
       {leaveGameLogic.component}
@@ -57,7 +59,7 @@ export const GameLobby: React.FC = (props) => {
         <Grid item container direction="row" justify="space-around">
           {currentGame.isOwner ? (
             <Grid item>
-              <StyledButton color="red" onClick={onStartGame}>
+              <StyledButton disabled={canStartGame} color="red" onClick={onStartGame}>
                 Start Game
               </StyledButton>
             </Grid>

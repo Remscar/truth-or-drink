@@ -71,7 +71,6 @@ const useStyles = makeStyles(theme => ({
     border: 0,
     borderRadius: 3,
     boxShadow: getBoxShadow,
-    color: 'white',
     height: 48,
     padding: '0 30px',
   }

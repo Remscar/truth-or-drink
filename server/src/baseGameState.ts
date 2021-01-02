@@ -6,7 +6,7 @@ import { socketForRoom } from "./serverSockets";
 const logger = getLogger("BaseGameState");
 
 export abstract class BaseGameState {
-  public readonly players: Player[];
+  private readonly players: Player[];
 
   protected _started: boolean = false;
   protected _owner: PlayerInfo;
@@ -83,7 +83,7 @@ export abstract class BaseGameState {
         const tryDestroy = this.removePlayerFromGame(player);
         tryDestroy && this.destroyGameIfNeeded();
       }
-    }, 10 * 1000);
+    }, 15 * 1000);
 
     
     this.destroyGameIfNeeded();
@@ -99,6 +99,15 @@ export abstract class BaseGameState {
     }
 
     return false;
+  }
+
+  public getPlayers(onlyConnected = true): Player[] {
+    if (!onlyConnected) {
+      return Object.assign([], this.players) as Player[];
+    }
+
+    const connectedPlayers = this.players.filter((e) => e.connected);
+    return connectedPlayers;
   }
 
   public async removePlayerFromGame(player: Player) {
