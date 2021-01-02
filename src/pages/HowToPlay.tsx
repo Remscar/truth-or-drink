@@ -34,7 +34,7 @@ export const HowToPlay: React.FC<Props> = (props: Props) => {
 
 
 
-        <Grid item style={{paddingTop: '72px'}}>
+        <Grid item style={{paddingTop: '72px', paddingBottom: '32px'}}>
           <StyledButton fullWidth href="/" color="gray">
             Back
           </StyledButton>
