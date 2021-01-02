@@ -41,6 +41,14 @@ export const Home: React.FC<Props> = (props: Props) => {
             Join Game
           </StyledButton>
         </Grid>
+
+        <Grid item style={{paddingTop: '64px'}}>
+          <StyledButton color="gray" href="/how" fullWidth>
+            How To Play
+          </StyledButton>
+        </Grid>
+
+
       </Grid>
       <Typography variant={"subtitle2"} className={classes.bottom} align={"center"}>
         A website made by Zachary, <Link href={'mailto:contact@truthordrink.party'}>contact me here.</Link>

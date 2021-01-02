@@ -2,7 +2,7 @@ import React from "react";
 import { useCurrentGameState, useGameState } from "../../../hooks/useGameState";
 import { PlayerInfo } from "../../../shared";
 import { Maybe } from "../../../util";
-import { Box, Grid, makeStyles, Typography } from "@material-ui/core";
+import { Grid, makeStyles, Typography } from "@material-ui/core";
 import { StyledButton } from "../../button";
 
 const useStyles = makeStyles((theme) => ({
