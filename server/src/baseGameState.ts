@@ -78,12 +78,17 @@ export abstract class BaseGameState {
 
   public playerDisconnected = async (player: Player) => {
     setTimeout(() => {
-      if (this) {
-        logger.log(`post disconnect trigger`);
-        const tryDestroy = this.removePlayerFromGame(player);
-        tryDestroy && this.destroyGameIfNeeded();
+      try {
+        if (this) {
+          logger.log(`post disconnect trigger`);
+          const tryDestroy = this.removePlayerFromGame(player);
+          tryDestroy && this.destroyGameIfNeeded();
+        }
+      } catch (e) {
+        logger.error(`Post disconnect trigger failed with message: ${e.message}`);
       }
-    }, 15 * 1000);
+      
+    }, 30 * 1000);
 
     
     this.destroyGameIfNeeded();

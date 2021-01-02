@@ -117,6 +117,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
           <StyledButton
             disabled={!createButtonEnabled || creatingGame || selectedDecks.length === 0}
             color="blue"
+            fullWidth
             onClick={onCreateGame}
           >
             Create Game
@@ -127,7 +128,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
         </Grid>
 
         <Grid item>
-          <StyledButton href="/" color="gray">
+          <StyledButton fullWidth href="/" color="gray">
             Back
           </StyledButton>
         </Grid>

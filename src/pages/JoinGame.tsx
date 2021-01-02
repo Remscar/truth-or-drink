@@ -23,7 +23,7 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
   const [sendToGameRoom, setSendToGameRoom] = React.useState(false);
 
   React.useEffect(() => {
-    setJoinButtonEnabled(playerDataInput.isValid);
+    setJoinButtonEnabled(playerDataInput.isValid && gameCodeInput.code.length > 0);
   }, [playerDataInput]);
 
   const onJoinGame = async () => {
@@ -62,6 +62,7 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
           <StyledButton
             disabled={!joinButtonEnabled || joiningGame}
             color="blue"
+            fullWidth
             onClick={onJoinGame}
           >
             Join Game
@@ -79,7 +80,7 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
         ) : null}
 
         <Grid item>
-          <StyledButton href="/" color="gray">
+          <StyledButton fullWidth href="/" color="gray">
             Back
           </StyledButton>
         </Grid>
