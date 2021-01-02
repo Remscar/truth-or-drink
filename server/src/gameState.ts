@@ -2,13 +2,19 @@ import {
   CompleteGameStateDto,
   DeckTypes,
   getLogger,
+  IMap,
   Maybe,
+  PlayerGameState,
   PlayerInfo,
   Round,
   RoundState,
   ToDGameState,
 } from "../util";
-import { randomElementFromArray, toExistingPlayerInfo, toPlayerInfo } from "../util/helpers";
+import {
+  randomElementFromArray,
+  shuffleArray,
+  toPlayerInfo,
+} from "../util/helpers";
 import { BaseGameState } from "./baseGameState";
 import { Player } from "./player";
 import { TruthOrDrinkGame } from "./todGame";
@@ -20,15 +26,18 @@ const pointsForAnswering = 0;
 const pointsForWinning = 5;
 const pointsForLiking = 1;
 
+interface ExtendedPlayerGameState extends PlayerGameState {
+  player: Player;
+}
+
 export class GameState extends BaseGameState {
   private _dealer: Maybe<PlayerInfo> = null;
   private _roundState: RoundState = "waiting";
 
   private _currentRound: Maybe<Round> = null;
 
-  private _scores: { [name: string]: number | undefined } = {};
-  private _likes: { [name: string]: number | undefined } = {};
-  private _timesChosen: { [name: string]: number | undefined } = {};
+  private _playerData: IMap<ExtendedPlayerGameState> = {};
+
   private _playerChoices: PlayerInfo[] = [];
 
   private _lastDealer: Maybe<PlayerInfo> = null;
@@ -40,7 +49,50 @@ export class GameState extends BaseGameState {
   public constructor(public code: string, owner: Player, decks?: string[]) {
     super(code, owner);
 
-    this._game = new TruthOrDrinkGame(decks ?? [DeckTypes.Rocks, DeckTypes.Spicy, DeckTypes.Happy]);
+    this._game = new TruthOrDrinkGame(
+      decks ?? [DeckTypes.Rocks, DeckTypes.Spicy, DeckTypes.Happy]
+    );
+  }
+
+  private getPlayerState(player: PlayerInfo): ExtendedPlayerGameState {
+    let playerState = this._playerData[player.name];
+    if (playerState) {
+      return playerState;
+    }
+
+    const playerInstance = this.players.find((e) => e.name === player.name);
+
+    if (!playerInstance) {
+      throw Error(`Player ${player.name} not in game ${this.code}`);
+    }
+
+    playerState = {
+      score: 0,
+      likes: 0,
+      timesChosen: 0,
+      player: playerInstance,
+    };
+
+    this._playerData[player.name] = playerState;
+
+    return playerState;
+  }
+
+  private createPlayerStateIfNotExists(player: PlayerInfo): ExtendedPlayerGameState {
+    return this.getPlayerState(player);
+  }
+
+  private getPlayerStates(connected = true): IMap<ExtendedPlayerGameState> {
+    if (!connected) {
+      return this._playerData;
+    }
+    const playerStates: IMap<ExtendedPlayerGameState> = {};
+    Object.entries(this._playerData).forEach(([name, playerState]) => {
+      if (playerState.player.connected) {
+        playerStates[name] = playerState;
+      }
+    });
+    return playerStates;
   }
 
   public get dealer(): Maybe<Player> {
@@ -59,17 +111,9 @@ export class GameState extends BaseGameState {
       return false;
     }
 
-    if (!this._scores[player.name]) {
-      this._scores[player.name] = 0;
-    }
-
-    if (!this._likes[player.name]) {
-      this._likes[player.name] = 0;
-    }
-
-    if (!this._timesChosen[player.name]) {
-      this._timesChosen[player.name] = 0;
-    }
+    const state = this.createPlayerStateIfNotExists(player);
+    const fewestTimesAPlayerHasBeenChosen = this.getFewestTimesChosen();
+    state.timesChosen = Math.max(fewestTimesAPlayerHasBeenChosen, state.timesChosen);
 
     this.calculatePlayerChoices();
 
@@ -78,10 +122,6 @@ export class GameState extends BaseGameState {
 
   public async removePlayerFromGame(player: Player) {
     const shouldDestroy = await super.removePlayerFromGame(player);
-
-    this._scores[player.name] = undefined;
-    this._likes[player.name] = undefined;
-    this._timesChosen[player.name] = undefined;
 
     if (shouldDestroy) {
       return shouldDestroy;
@@ -107,6 +147,23 @@ export class GameState extends BaseGameState {
     return false;
   }
 
+  private createPlayerGameSateForDto() {
+    const choices = this.getPlayerStates(true);
+    const states: IMap<PlayerGameState> = {};
+
+    Object.entries(choices).forEach(([name, playerState]) => {
+      if (playerState.player.connected) {
+        states[name] = {
+          score: playerState.score,
+          likes: playerState.likes,
+          timesChosen: playerState.timesChosen,
+        };
+      }
+    });
+
+    return states;
+  }
+
   public currentGameState(): ToDGameState {
     const ownerPlayer = this.owner;
     const state = {
@@ -120,9 +177,8 @@ export class GameState extends BaseGameState {
       state: this._roundState,
       dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound,
-      scores: this._scores,
-      likes: this._likes,
-      playerChoices: this._playerChoices.map((e) => ({name: e.name}))
+      playerStates: this.createPlayerGameSateForDto(),
+      playerChoices: this._playerChoices.map((e) => ({ name: e.name })),
     };
 
     return state;
@@ -144,46 +200,74 @@ export class GameState extends BaseGameState {
     this._dealer = this.owner;
   }
 
+  private getFewestTimesChosen(): number {
+    const playerStates = this.getPlayerStates(true);
+
+    let fewestTimesChosen = 9999999;
+    Object.values(playerStates).forEach(e => {
+      if (e.timesChosen < fewestTimesChosen) {
+        fewestTimesChosen = e.timesChosen;
+      }
+    })
+
+    return fewestTimesChosen;
+  }
+
   protected calculatePlayerChoices() {
     const minNumberPlayers = 3;
-    let maxNumTimesChosen = 1;
+    let maxNumTimesChosen = this.getFewestTimesChosen();
     let playerOptions: string[] = [];
 
-    const playerChosenArray = Object.entries(this._timesChosen).map(([player, timesChosen]) => ({
-      player,
-      timesChosen: timesChosen as number
-    }));
+    const playerStates = this.getPlayerStates(true);
+
+    const playerChosenArray = Object.entries(playerStates).map(
+      ([player, playerState]) => ({
+        player,
+        timesChosen: playerState.timesChosen,
+      })
+    );
+    shuffleArray(playerChosenArray);
 
     if (playerChosenArray.length <= minNumberPlayers) {
-      playerOptions = playerChosenArray.map(e => e.player);
+      playerOptions = playerChosenArray.map((e) => e.player);
     } else {
       while (playerOptions.length < minNumberPlayers) {
-        const choosablePlayers = playerChosenArray.filter(e => e.timesChosen < maxNumTimesChosen);
-  
+        const choosablePlayers = playerChosenArray.filter(
+          (e) => e.timesChosen < maxNumTimesChosen
+        );
+
         if (choosablePlayers.length === 0) {
           ++maxNumTimesChosen;
-          continue
+          continue;
         }
-  
+
         // We have less than needed # of players left to choose from
         if (choosablePlayers.length < minNumberPlayers) {
-          playerOptions = playerOptions.concat(choosablePlayers.map(e => e.player));
+          playerOptions = playerOptions.concat(
+            choosablePlayers.map((e) => e.player)
+          );
           const numAlreadyChosen = playerOptions.length;
-          const extraChoices = minNumberPlayers - numAlreadyChosen
-  
-          const extraPlayers = playerChosenArray.filter(e => e.timesChosen >= maxNumTimesChosen);
+          const extraChoices = minNumberPlayers - numAlreadyChosen;
+
+          const extraPlayers = playerChosenArray.filter(
+            (e) => e.timesChosen >= maxNumTimesChosen
+          );
           for (let i = 0; i < extraChoices && i < extraPlayers.length; ++i) {
             playerOptions.push(extraPlayers[i].player);
           }
-  
-          break
+
+          break;
         }
-  
-        playerOptions = choosablePlayers.map(e => e.player);
+
+        playerOptions = choosablePlayers.map((e) => e.player);
       }
     }
 
-    this._playerChoices = playerOptions.map(e => ({name: e}));
+    this._playerChoices = playerOptions.map((e) => ({ name: e } as PlayerInfo));
+  }
+
+  public async gotoLobby() {
+    this._roundState = "waiting";
   }
 
   public async newRound() {
@@ -211,11 +295,9 @@ export class GameState extends BaseGameState {
     this._currentRound.players = players;
     this._currentRound.turn = 0;
     this._roundState = "choosing";
-    
+
     for (const player of players) {
-      let timesChosen = this._timesChosen[player.name] || 0;
-      timesChosen += 1;
-      this._timesChosen[player.name] = timesChosen;
+      this.getPlayerState(player).timesChosen += 1;
     }
   }
 
@@ -249,11 +331,22 @@ export class GameState extends BaseGameState {
     this._currentRound.questionsToAsk = questionOrder;
   }
 
+  private getPlayers(connected = true): Player[] {
+    if (!connected) {
+      return this.players;
+    }
+
+    const connectedPlayers = this.players.filter((e) => e.connected);
+    return connectedPlayers;
+  }
+
   private chooseNextDealer(): PlayerInfo {
-    const dealerOptions = Object.assign([], this.players) as Player[];
+    const dealerOptions = Object.assign([], this.getPlayers()) as Player[];
     if (this._lastDealer) {
       const lastDealerName = this._lastDealer.name;
-      const dealerIndex = dealerOptions.findIndex((e) => e.name === lastDealerName);
+      const dealerIndex = dealerOptions.findIndex(
+        (e) => e.name === lastDealerName
+      );
       if (dealerIndex > -1) {
         dealerOptions.splice(dealerIndex, 1);
       }
@@ -263,21 +356,23 @@ export class GameState extends BaseGameState {
   }
 
   protected async addToPlayerScore(player: PlayerInfo, score: number) {
-    const currentScore = this._scores[player.name];
+    const playerState = this.getPlayerState(player);
+    const currentScore = playerState.score;
     let newScore = currentScore !== undefined ? currentScore : 0;
     newScore += score;
 
     logger.debug(`${player.name} score ${currentScore} -> ${newScore}`);
 
-    this._scores[player.name] = newScore;
+    playerState.score = newScore;
   }
 
   protected async addToPlayerLikes(player: PlayerInfo, likes: number) {
-    const currentScore = this._likes[player.name];
+    const playerState = this.getPlayerState(player);
+    const currentScore = playerState.likes;
     let newLikes = currentScore !== undefined ? currentScore : 0;
     newLikes += likes;
 
-    this._likes[player.name] = newLikes;
+    playerState.likes = newLikes;
   }
 
   public async playerAnsweredQuestion(didAnswer: boolean, player: PlayerInfo) {
@@ -293,15 +388,20 @@ export class GameState extends BaseGameState {
       throw Error("invalid game state");
     }
 
-    const answeringPlayer = this._currentRound.players[(this._currentRound.turn + 1) % 2];
+    const answeringPlayer = this._currentRound.players[
+      (this._currentRound.turn + 1) % 2
+    ];
     const otherPlayer = this._currentRound.players[this._currentRound.turn];
-    
+
     if (answeringPlayer.name !== player.name) {
       logger.warn(`Ignoring player answer since it's the wrong player`);
       return;
     }
 
-    this.addToPlayerScore(answeringPlayer, didAnswer ? pointsForAnswering : pointsForSkipping);
+    this.addToPlayerScore(
+      answeringPlayer,
+      didAnswer ? pointsForAnswering : pointsForSkipping
+    );
 
     if (!didAnswer) {
       this.addToPlayerScore(otherPlayer, pointsForWinning);
@@ -319,7 +419,6 @@ export class GameState extends BaseGameState {
       if (this._someoneSkippedAnswering) {
         this._lastDealer = this._dealer;
         this._dealer = this.chooseNextDealer();
-        
 
         this._roundState = "scores";
       } else {
@@ -369,7 +468,7 @@ export class GameState extends BaseGameState {
     }
 
     if (!this._currentRound.likedAnswers) {
-      this._currentRound.likedAnswers = {}
+      this._currentRound.likedAnswers = {};
     }
 
     return this._currentRound.likedAnswers;
@@ -378,7 +477,7 @@ export class GameState extends BaseGameState {
   private getPlayersLikedAnswers(player: PlayerInfo) {
     const likedAnswers = this.getLikedAnswers();
     if (!likedAnswers[player.name]) {
-      likedAnswers[player.name] = []
+      likedAnswers[player.name] = [];
     }
 
     return likedAnswers[player.name];
@@ -399,11 +498,15 @@ export class GameState extends BaseGameState {
       this.addToPlayerScore(likedPlayer, pointsForLiking);
       this.addToPlayerLikes(likedPlayer, 1);
     } else {
-      logger.debug(`${player.name} already voted for ${likedPlayer.name}`)
+      logger.debug(`${player.name} already voted for ${likedPlayer.name}`);
     }
   }
 }
 
-export const createGameState = (code: string, originalOwner: Player, decks?: string[]) => {
+export const createGameState = (
+  code: string,
+  originalOwner: Player,
+  decks?: string[]
+) => {
   return new GameState(code, originalOwner, decks);
 };

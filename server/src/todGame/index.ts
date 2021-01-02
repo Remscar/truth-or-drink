@@ -1,17 +1,19 @@
 import { getLogger, Maybe, Round } from "../../util";
-import { randomElementFromArray } from "../../util/helpers";
+import { randomElementFromArray, shuffleArray } from "../../util/helpers";
 
 import * as fs from 'fs';
 import * as path from 'path';
 
 const logger = getLogger(`TruthOrDrinkGame`);
 
-
-
 const getNormalDeck = (name: string): string[] => {
   let rawDeck: Maybe<string> = null;
   try {
-    rawDeck = fs.readFileSync(path.join(process.cwd(), 'questions', `${name}.txt`)).toString();
+    let cwd = process.cwd();
+    if (process.env.TS_NODE_DEV) {
+      cwd = path.join(cwd, '..');
+    }
+    rawDeck = fs.readFileSync(path.join(cwd, 'questions', `${name}.txt`)).toString();
   } catch (e) {
     throw Error(`Cannot load deck ${name}: ${e}`);
   }
@@ -24,19 +26,35 @@ export class TruthOrDrinkGame {
   private questions: string[] = [];
 
 
-  constructor(decks: string[]) {
-    for (const deck of decks) {
+  constructor(private decks: string[]) {
+    this.questions = shuffleArray(this.questions);
+    this.loadQuestionsFromDeck();
+    logger.log(`Created new game with ${this.questions.length} questions from ${decks.length} decks.`);
+  }
+
+  private loadQuestionsFromDeck() {
+    for (const deck of this.decks) {
       const deckQuestions = getNormalDeck(deck);
       this.questions = this.questions.concat(deckQuestions);
       logger.debug(`Imported ${deckQuestions.length} questions from ${deck}`);
     }
+  }
 
-    logger.log(`Created new game with ${this.questions.length} questions from ${decks.length} decks.`);
+  private chooseQuestion(): string {
+    const randomIndex = Math.floor(Math.random() * this.questions.length);
+    const chosenQuestion = this.questions[randomIndex];
+    this.questions.splice(randomIndex, 1);
+
+    return chosenQuestion;
   }
 
   public nextRound(): Round {
-    const q1 = randomElementFromArray(this.questions);
-    const q2 = randomElementFromArray(this.questions);
+    if (this.questions.length < 5) {
+      this.loadQuestionsFromDeck();
+    }
+    
+    const q1 = this.chooseQuestion();
+    const q2 = this.chooseQuestion();
     const round: Round = {
       questions: [q1, q2]
     }

@@ -50,22 +50,22 @@ export const ScorePage: React.FC = (props) => {
     player: string;
     score: number;
   }
-  const sortedPlayerScores = Object.entries(currentGame.scores)
+  const sortedPlayerScores = Object.entries(currentGame.playerStates)
     .map(
-      ([player, score]) =>
+      ([player, state]) =>
         ({
           player,
-          score: score as number,
+          score: state.score as number,
         } as PlayerScore)
     )
     .sort((a: PlayerScore, b: PlayerScore) => b.score - a.score);
 
-  const sortedPlayerLikes = Object.entries(currentGame.likes)
+  const sortedPlayerLikes = Object.entries(currentGame.playerStates)
     .map(
-      ([player, score]) =>
+      ([player, state]) =>
         ({
           player,
-          score: score as number,
+          score: state.likes as number,
         } as PlayerScore)
     )
     .sort((a: PlayerScore, b: PlayerScore) => b.score - a.score);
@@ -87,7 +87,7 @@ export const ScorePage: React.FC = (props) => {
 
             const topLiked = sortedPlayerLikes[0].player === data.player && sortedPlayerLikes[0].score > 0;
 
-            const numLikes = currentGame.likes[data.player];
+            const numLikes = currentGame.playerStates[data.player].likes;
 
             return (
               <Grid key={data.player} item>

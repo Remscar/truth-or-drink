@@ -1,4 +1,5 @@
 type Maybe<T> = T | null;
+type IMap<T> = {[key: string] : T};
 
 export const DeckTypes = {
   Spicy: "spicy",
@@ -16,6 +17,12 @@ export const DeckTypes = {
 export interface PlayerInfo {
   name: string;
   owner?: boolean;
+}
+
+export interface PlayerGameState {
+  score: number;
+  likes: number;
+  timesChosen: number;
 }
 
 export type RoundState = "waiting" | "dealing" | "choosing" | "asking" | "scoring" | "scores";
@@ -36,9 +43,8 @@ export interface ToDGameState {
   state: RoundState;
   dealer: Maybe<PlayerInfo>;
   currentRound: Maybe<Round>;
-  scores: {[name: string]: number | undefined}
-  likes: {[name: string]: number | undefined}
   playerChoices: PlayerInfo[];
+  playerStates: IMap<PlayerGameState>;
 }
 
 export interface CompleteGameStateDto extends Dto, ToDGameState {
