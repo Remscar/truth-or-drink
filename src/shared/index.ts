@@ -26,6 +26,9 @@ export interface PlayerGameState {
 }
 
 export type RoundState = "waiting" | "dealing" | "choosing" | "asking" | "scoring" | "scores";
+export type DuoRoundState = "waiting" | "choosing" | "asking" |  "scores";
+
+
 
 export interface Round {
   questions: [string, string];
@@ -52,6 +55,29 @@ export interface ToDGameState {
 }
 
 export interface CompleteGameStateDto extends Dto, ToDGameState {
+}
+
+export interface DuoRound {
+  questions: [string, string];
+  questionPoints: [number, number];
+  questionsToAsk?: number[];
+  playerOrder: [PlayerInfo, PlayerInfo];
+  turn?: number;
+}
+
+export interface DuoToDGameState {
+  gameCode: string;
+  owner: string;
+  started: boolean;
+  players: PlayerInfo[];
+  state: DuoRoundState;
+  questionPointValues: number[];
+  currentRound: Maybe<DuoRound>;
+  playerStates: IMap<PlayerGameState>;
+}
+
+export interface CompleteDuoGameStateDto extends Dto, DuoToDGameState {
+
 }
 
 export interface Dto {

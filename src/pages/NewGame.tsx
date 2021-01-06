@@ -12,6 +12,7 @@ import { useDataPlayerInput } from "../components/useDataPlayerInput";
 import { useGameState } from "../hooks/useGameState";
 
 import { getLogger } from "../util";
+import { useDuoGameState } from "../hooks/useDuoGameState";
 
 interface Props {}
 
@@ -39,6 +40,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
   const [selectedDecks, setSelectedDecks] = React.useState<string[]>([DeckTypes.Rocks]);
 
   const gameState = useGameState();
+  const duoGameState = useDuoGameState();
 
   React.useEffect(() => {
     setCreateButtonEnabled(playerDataInput.isValid);
@@ -48,6 +50,14 @@ export const NewGame: React.FC<Props> = (props: Props) => {
     logger.log("Creating game");
     setCreatingGame(true);
     await gameState.createGame(playerDataInput.playerInfo, selectedDecks);
+    setCreatingGame(false);
+    setSendToGameRoom(true);
+  };
+
+  const onCreateDuoGame = async () => {
+    logger.log("Creating Duos game");
+    setCreatingGame(true);
+    await duoGameState.createGame(playerDataInput.playerInfo, selectedDecks);
     setCreatingGame(false);
     setSendToGameRoom(true);
   };
@@ -120,12 +130,27 @@ export const NewGame: React.FC<Props> = (props: Props) => {
             fullWidth
             onClick={onCreateGame}
           >
-            Create Game
+            Create Party Game (3+ Players)
           </StyledButton>
         </Grid>
         <Grid item>
           {creatingGame ? <Typography>Creating Game...</Typography> : null}
         </Grid>
+
+        <Grid item>
+          <StyledButton
+            disabled={!createButtonEnabled || creatingGame || selectedDecks.length === 0}
+            color="blue"
+            fullWidth
+            onClick={onCreateDuoGame}
+          >
+            Create Duo Game (2 Players)
+          </StyledButton>
+        </Grid>
+        <Grid item>
+          {creatingGame ? <Typography>Creating Game...</Typography> : null}
+        </Grid>
+
 
         <Grid item>
           <StyledButton fullWidth href="/" color="gray">

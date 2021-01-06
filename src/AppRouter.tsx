@@ -6,6 +6,7 @@ import { NewGame } from "./pages/NewGame";
 import { JoinGame } from "./pages/JoinGame";
 import { GameRoom } from "./pages/GameRoom";
 import { HowToPlay } from "./pages/HowToPlay";
+import { DuoGameRoom } from "./pages/DuoGameRoom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,6 +35,7 @@ export const AppRouter: React.FC = (props) => {
             <Route exact={true} path="/new" component={NewGame} />
             <Route exact={true} path="/join" component={JoinGame} />
             <Route exact={true} path="/game" component={GameRoom} />
+            <Route exact={true} path="/duos" component={DuoGameRoom} />
             <Route exact={true} path="/how" component={HowToPlay} />
           </Switch>
         </BrowserRouter>
