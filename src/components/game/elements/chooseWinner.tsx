@@ -28,15 +28,42 @@ export const ChooseWinner: React.FC = (props) => {
   const [timeLeft, setTimeLeft] = React.useState<number>(15);
   const [hasVotedForWinner, setHasVotedForWinner] = React.useState(false);
 
+  const [intervalId, setIntervalId] = React.useState<any>(undefined);
+  const [timerSet, setTimerSet] = React.useState(false);
+
   React.useEffect(() => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+
+    let isSubscribed = true;
+
     const interval = setInterval(() => {
       const now = Date.now();
-      const timeLeft = Math.max(Math.ceil((currentGame.timerEnd - now) / 1000), 0);
+      const timeLeft = Math.max(
+        Math.ceil((currentGame.timerEnd - now) / 1000),
+        0
+      );
+
+      if (!isSubscribed) {
+        return;
+      }
+
+      if (timeLeft > 0) {
+        setTimerSet(true);
+      }
       setTimeLeft(timeLeft);
     }, 500);
 
-    return () => clearInterval(interval);
-  }, []);
+    setIntervalId(interval);
+
+    return () => {
+      isSubscribed = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    }
+  }, [currentGame.timerEnd]);
 
   if (!currentGame || !localPlayer || !round || !involvedPlayers || !dealer) {
     return <div>Broken choose winner</div>;
@@ -102,16 +129,20 @@ export const ChooseWinner: React.FC = (props) => {
                 );
               })}
             </Grid>
-            <Typography style={{ paddingTop: "32px" }} align="center">
-              {`Next Round in`}
-            </Typography>
-            <Typography
-              style={{ paddingTop: "64px" }}
-              variant={"h1"}
-              align="center"
-            >
-              {`${timeLeft}`}
-            </Typography>
+            {currentGame.winnerChosen && timerSet ? (
+              <React.Fragment>
+                <Typography style={{ paddingTop: "32px" }} align="center">
+                  {`Next Round in`}
+                </Typography>
+                <Typography
+                  style={{ paddingTop: "64px" }}
+                  variant={"h1"}
+                  align="center"
+                >
+                  {`${timeLeft}`}
+                </Typography>
+              </React.Fragment>
+            ) : null}
           </Grid>
         </React.Fragment>
       );
@@ -123,29 +154,30 @@ export const ChooseWinner: React.FC = (props) => {
               Winner
             </Typography>
             <React.Fragment>
-                <Typography align="center">
-                  Who gave the most authentic, truthful and potentially revealing answer?
-                </Typography>
+              <Typography align="center">
+                Who gave the most authentic, truthful and potentially revealing
+                answer?
+              </Typography>
 
-                <Grid item container direction="column">
-                  {involvedPlayers.map((player: PlayerInfo, index: number) => {
-                    const color = index ? "blue" : "red";
-                    return (
-                      <Grid className={classes.choiceButton} item key={index}>
-                        <StyledButton
-                          color={color}
-                          fullWidth
-                          disabled={hasVotedForWinner}
-                          onClick={() => choseWinner(player)}
-                        >{`${player.name}'s Answer`}</StyledButton>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              </React.Fragment>
-            {!hasVotedForWinner ? null: (
+              <Grid item container direction="column">
+                {involvedPlayers.map((player: PlayerInfo, index: number) => {
+                  const color = index ? "blue" : "red";
+                  return (
+                    <Grid className={classes.choiceButton} item key={index}>
+                      <StyledButton
+                        color={color}
+                        fullWidth
+                        disabled={hasVotedForWinner}
+                        onClick={() => choseWinner(player)}
+                      >{`${player.name}'s Answer`}</StyledButton>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </React.Fragment>
+            {!hasVotedForWinner ? null : (
               <React.Fragment>
-                <Typography align="center" style={{paddingTop: '32px'}}>
+                <Typography align="center" style={{ paddingTop: "32px" }}>
                   {`You can also award points to answers you liked`}
                 </Typography>
                 <Grid item container direction="column">
@@ -180,16 +212,20 @@ export const ChooseWinner: React.FC = (props) => {
               </React.Fragment>
             )}
 
-            <Typography style={{ paddingTop: "32px" }} align="center">
-              {`Next Round in`}
-            </Typography>
-            <Typography
-              style={{ paddingTop: "64px" }}
-              variant={"h1"}
-              align="center"
-            >
-              {`${timeLeft}`}
-            </Typography>
+            {currentGame.winnerChosen && timerSet ? (
+              <React.Fragment>
+                <Typography style={{ paddingTop: "32px" }} align="center">
+                  {`Next Round in`}
+                </Typography>
+                <Typography
+                  style={{ paddingTop: "64px" }}
+                  variant={"h1"}
+                  align="center"
+                >
+                  {`${timeLeft}`}
+                </Typography>
+              </React.Fragment>
+            ) : null}
           </Grid>
         </React.Fragment>
       );
@@ -235,16 +271,20 @@ export const ChooseWinner: React.FC = (props) => {
               );
             })}
           </Grid>
-          <Typography style={{ paddingTop: "32px" }} align="center">
-            {`Next Round in`}
-          </Typography>
-          <Typography
-            style={{ paddingTop: "64px" }}
-            variant={"h1"}
-            align="center"
-          >
-            {`${timeLeft}`}
-          </Typography>
+          {currentGame.winnerChosen && timerSet ? (
+            <React.Fragment>
+              <Typography style={{ paddingTop: "32px" }} align="center">
+                {`Next Round in`}
+              </Typography>
+              <Typography
+                style={{ paddingTop: "64px" }}
+                variant={"h1"}
+                align="center"
+              >
+                {`${timeLeft}`}
+              </Typography>
+            </React.Fragment>
+          ) : null}
         </Grid>
       </React.Fragment>
     );

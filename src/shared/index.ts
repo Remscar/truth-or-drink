@@ -48,6 +48,7 @@ export interface ToDGameState {
   playerStates: IMap<PlayerGameState>;
   someoneSkipped: boolean;
   timerEnd: number;
+  winnerChosen: boolean;
 }
 
 export interface CompleteGameStateDto extends Dto, ToDGameState {

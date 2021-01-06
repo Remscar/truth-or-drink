@@ -25,8 +25,7 @@ const pointsForSkipping = -5;
 const pointsForAnswering = 0;
 const pointsForWinning = 5;
 const pointsForLiking = 1;
-const minimumVotingDuration = 30;
-const autoChooseWinner = false;
+const minimumVotingDuration = 10;
 
 interface ExtendedPlayerGameState extends PlayerGameState {
   player: Player;
@@ -45,12 +44,11 @@ export class GameState extends BaseGameState {
   private _lastDealer: Maybe<PlayerInfo> = null;
 
   private _someoneSkippedAnswering = false;
+  private _winnerChosen = false;
 
   private _game: TruthOrDrinkGame;
 
   private _timerEnd: number = 0;
-  private _readyToFinishScoring: boolean = false;
-  private _winnerChosen: boolean = false;
 
   public constructor(public code: string, owner: Player, decks?: string[]) {
     super(code, owner);
@@ -190,7 +188,8 @@ export class GameState extends BaseGameState {
       playerStates: this.createPlayerGameSateForDto(),
       playerChoices: this._playerChoices.map((e) => ({ name: e.name })),
       timerEnd: this._timerEnd,
-      someoneSkipped: this._someoneSkippedAnswering
+      someoneSkipped: this._someoneSkippedAnswering,
+      winnerChosen: this._winnerChosen
     };
 
     return state;
@@ -210,8 +209,6 @@ export class GameState extends BaseGameState {
   public async startGame() {
     super.startGame();
     this._dealer = this.owner;
-    this._readyToFinishScoring = false;
-    this._winnerChosen = false;
   }
 
   private getFewestTimesChosen(): number {
@@ -294,6 +291,7 @@ export class GameState extends BaseGameState {
     this._currentRound = newRound;
 
     this._someoneSkippedAnswering = false;
+    this._winnerChosen = false;
   }
 
   public async playersChosen(players: PlayerInfo[]) {
@@ -432,47 +430,13 @@ export class GameState extends BaseGameState {
 
   public async beginScoring() {
     this._roundState = "scoring";
+  }
+
+  public async startEndScoringCountdown() {
     this._timerEnd = Date.now() + minimumVotingDuration * 1000;
+    this.sendGameState();
     setTimeout(() => {
-      // Move onto next round if dealer has chosen winner already
-      if (this._winnerChosen) {
-        this.finishScoring();
-        this.sendGameState();
-        return;
-      }
-
-      this._readyToFinishScoring = true;
-
-      // If dealer has to choose winner, skip this
-      if (!autoChooseWinner) {
-        return;
-      }
-
-      // No winner chosen yet, choose democratically
-      if (!this._currentRound) {
-        logger.error(`No current round when forcing scoring to finish.`);
-        return;
-      }
-
-      if (!this._currentRound.likesForPlayers || !this._currentRound.players) {
-        logger.error(`Broken game state when forcing scoring to finish.`);
-        return;
-      }
-
-      const votesForPlayers = this._currentRound.likesForPlayers;
-      const playersInRound = this._currentRound.players;
-
-      let winningPlayerIndex = 0;
-      let winningPlayerLikes = 0;
-      for (let i = 0; i < playersInRound.length && i < votesForPlayers.length; ++i) {
-        if (votesForPlayers[i] > winningPlayerLikes) {
-          winningPlayerLikes = votesForPlayers[i];
-          winningPlayerIndex = i;
-        }
-      }
-
-      const winningPlayer = playersInRound[winningPlayerIndex];
-      this.playerChoseWinner(winningPlayer);
+      this.finishScoring();
       this.sendGameState();
     }, minimumVotingDuration * 1000 + 2500); // always have a little grace time
   }
@@ -500,9 +464,7 @@ export class GameState extends BaseGameState {
 
     logger.debug(`${winner.name} won the round.`);
 
-    if (this._readyToFinishScoring) {
-      this.finishScoring();
-    }
+    await this.startEndScoringCountdown();
   }
 
   public async finishScoring() {
