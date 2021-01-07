@@ -1,2 +1,2 @@
-export * from './clientSockets';
-export * from './gameState';
+export * from './party/clientSockets';
+export * from './party/gameState';

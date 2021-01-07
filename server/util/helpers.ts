@@ -44,3 +44,16 @@ export const shuffleArray = <T>(array: T[]) => {
 
   return array;
 }
+
+export const generateGameCode = () => {
+  const desiredCodeLength = 4;
+  const digitOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let code = "";
+
+  while (code.length < desiredCodeLength) {
+    const randomDigit = digitOptions[Math.floor(Math.random() * digitOptions.length)];
+    code = code + randomDigit;
+  }
+
+  return code;
+}

@@ -9,15 +9,15 @@ import {
   Round,
   RoundState,
   ToDGameState,
-} from "../util";
+} from "../../util";
 import {
   randomElementFromArray,
   shuffleArray,
   toPlayerInfo,
-} from "../util/helpers";
-import { BaseGameState } from "./baseGameState";
-import { Player } from "./player";
-import { TruthOrDrinkGame } from "./todGame";
+} from "../../util/helpers";
+import { BaseGameState } from "../baseGameState";
+import { Player } from "../player";
+import { TruthOrDrinkGame } from "../todGame";
 
 const logger = getLogger("gameState");
 
@@ -31,7 +31,7 @@ interface ExtendedPlayerGameState extends PlayerGameState {
   player: Player;
 }
 
-export class GameState extends BaseGameState {
+export class PartyGameState extends BaseGameState {
   private _dealer: Maybe<PlayerInfo> = null;
   private _roundState: RoundState = "waiting";
 
@@ -538,10 +538,10 @@ export class GameState extends BaseGameState {
   }
 }
 
-export const createGameState = (
+export const createPartyGameState = (
   code: string,
   originalOwner: Player,
   decks?: string[]
 ) => {
-  return new GameState(code, originalOwner, decks);
+  return new PartyGameState(code, originalOwner, decks);
 };

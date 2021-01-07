@@ -71,6 +71,7 @@ export interface DuoToDGameState {
   started: boolean;
   players: PlayerInfo[];
   state: DuoRoundState;
+  dealer: Maybe<PlayerInfo>;
   questionPointValues: number[];
   currentRound: Maybe<DuoRound>;
   playerStates: IMap<PlayerGameState>;

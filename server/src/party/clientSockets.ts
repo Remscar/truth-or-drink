@@ -1,26 +1,23 @@
 import { join } from "path";
 import { Socket } from "socket.io";
-import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, PlayerAnswerLikedDto, PlayerChoseWinnerDto, SelectedPlayersDto } from "../util";
-import { gameManager } from "./games";
-import { GameState } from "./gameState";
-import { createPlayer, Player } from "./player";
+import { ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, PlayerAnswerLikedDto, PlayerChoseWinnerDto, SelectedPlayersDto } from "../../util";
+import { createPlayer, Player } from "../player";
+import { partyGameManager, PartyGameState } from ".";
 
-const logger = getLogger("clientSockets");
-
+const logger = getLogger("partyclientSockets");
 
 
-
-export const registerNewClientConnection = (socket: Socket) => {
+export const registerNewPartyClientConnection = (socket: Socket) => {
   logger.debug(`Setting up event handlers on new client socket. ${socket.id}`);
 
   let player: Maybe<Player> = null;
-  let game: Maybe<GameState> = null;
+  let game: Maybe<PartyGameState> = null;
 
   socket.on('create', async (data: CreateDto) => {
     logger.log(`${data.creator.name} requests to create a game.`);
 
     player = createPlayer(data.creator.name, socket);
-    const createdGame = await gameManager.createNewGame(player, data.decks);
+    const createdGame = await partyGameManager.createNewGame(player, data.decks);
 
     const response: CreatedDto = {
       ...createdGame.currentGameState()
@@ -38,9 +35,9 @@ export const registerNewClientConnection = (socket: Socket) => {
     let success = false;
     let error = "";
     
-    let joinedGame: Maybe<GameState> = null;
+    let joinedGame: Maybe<PartyGameState> = null;
     try {
-      joinedGame = await gameManager.joinGame(data.gameCode, player);
+      joinedGame = await partyGameManager.joinGame(data.gameCode, player);
       logger.log(`${data.player.name} has joined game ${data.gameCode}`);
       success = true;
     } catch (e) {

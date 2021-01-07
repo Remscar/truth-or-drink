@@ -1,25 +1,14 @@
-import { GameState } from ".";
-import { getLogger, IMap, Maybe, PlayerInfo } from "../util";
-import { createGameState } from "./gameState";
-import { Player } from "./player";
+import { getLogger, Maybe } from "../../util";
+import { Player } from "../player";
+import { generateGameCode } from "../../util/helpers";
+import { createPartyGameState, PartyGameState } from ".";
 
 const logger = getLogger("games");
 
-const games: Map<string, GameState> = new Map<string, GameState>();
+const games: Map<string, PartyGameState> = new Map<string, PartyGameState>();
 
 
-const generateGameCode = () => {
-  const desiredCodeLength = 4;
-  const digitOptions = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let code = "";
 
-  while (code.length < desiredCodeLength) {
-    const randomDigit = digitOptions[Math.floor(Math.random() * digitOptions.length)];
-    code = code + randomDigit;
-  }
-
-  return code;
-}
 
 const getGame = (gameCode: string) => {
   return games.get(gameCode);
@@ -30,9 +19,9 @@ const createNewGame = async (creator: Player, decks?: string[]) => {
 
   logger.log(`Creating game for ${creator.name} with code ${gameCode}`);
 
-  let newGameState: Maybe<GameState> = null;
+  let newGameState: Maybe<PartyGameState> = null;
   if (!games.has(gameCode)) {
-    newGameState = createGameState(gameCode, creator, decks);
+    newGameState = createPartyGameState(gameCode, creator, decks);
     games.set(gameCode, newGameState);
   } else {
     const game = games.get(gameCode);
@@ -66,7 +55,7 @@ const destroyGame = async (gameCode: string) => {
 }
 
 
-export const gameManager = {
+export const partyGameManager = {
   createNewGame,
   joinGame,
   destroyGame
