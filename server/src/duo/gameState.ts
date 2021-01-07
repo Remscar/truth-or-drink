@@ -31,7 +31,7 @@ interface ExtendedPlayerGameState extends PlayerGameState {
   player: Player;
 }
 
-export class PartyGameState extends BaseGameState {
+export class DuoGameState extends BaseGameState {
   private _dealer: Maybe<PlayerInfo> = null;
   private _roundState: RoundState = "waiting";
 
@@ -538,11 +538,11 @@ export class PartyGameState extends BaseGameState {
   }
 }
 
-export const createPartyGameState = (
+export const createDuoGameState = (
   code: string,
   originalOwner: Player,
   destroyCallback: Function,
   decks?: string[]
 ) => {
-  return new PartyGameState(code, originalOwner, destroyCallback, decks);
+  return new DuoGameState(code, originalOwner, destroyCallback, decks);
 };

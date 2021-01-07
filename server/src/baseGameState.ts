@@ -11,7 +11,7 @@ export abstract class BaseGameState {
   protected _started: boolean = false;
   protected _owner: PlayerInfo;
 
-  public constructor(public code: string, owner: Player) {
+  public constructor(public code: string, owner: Player, private _destroyCallback: Function) {
     this.players = [];
     this._owner = owner;
   }
@@ -99,7 +99,8 @@ export abstract class BaseGameState {
 
     if (connectedPlayers.length == 0) {
       logger.log(`All players have left game ${this.code}`);
-      gameManager.destroyGame(this.code);
+      this._destroyCallback(this.code);
+      //gameManager.destroyGame(this.code);
       return true;
     }
 

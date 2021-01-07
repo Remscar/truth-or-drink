@@ -1,13 +1,11 @@
 import { getLogger, Maybe } from "../../util";
 import { Player } from "../player";
 import { generateGameCode } from "../../util/helpers";
-import { createPartyGameState, PartyGameState } from ".";
+import { createDuoGameState, DuoGameState } from "./gameState";
 
 const logger = getLogger("games");
 
-const games: Map<string, PartyGameState> = new Map<string, PartyGameState>();
-
-
+const games: Map<string, DuoGameState> = new Map<string, DuoGameState>();
 
 
 const getGame = (gameCode: string) => {
@@ -19,9 +17,9 @@ const createNewGame = async (creator: Player, decks?: string[]) => {
 
   logger.log(`Creating game for ${creator.name} with code ${gameCode}`);
 
-  let newGameState: Maybe<PartyGameState> = null;
+  let newGameState: Maybe<DuoGameState> = null;
   if (!games.has(gameCode)) {
-    newGameState = createPartyGameState(gameCode, creator, destroyGame, decks);
+    newGameState = createDuoGameState(gameCode, creator, destroyGame, decks);
     games.set(gameCode, newGameState);
   } else {
     const game = games.get(gameCode);
@@ -55,7 +53,7 @@ const destroyGame = async (gameCode: string) => {
 }
 
 
-export const partyGameManager = {
+export const duoGameManager = {
   createNewGame,
   joinGame,
   destroyGame
