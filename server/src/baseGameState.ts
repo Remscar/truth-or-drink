@@ -1,5 +1,4 @@
 import { GameType, getLogger, PlayerInfo } from "../util";
-import { gameManager } from "./party/games";
 import { Player } from "./player";
 import { socketForRoom } from "./serverSockets";
 
