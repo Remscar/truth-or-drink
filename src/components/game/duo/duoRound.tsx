@@ -1,28 +1,31 @@
 import { Grid, Typography } from "@material-ui/core";
 import * as React from "react";
-import { useCurrentGameState, useGameState } from "../../../hooks/useGameState";
+import { useCurrentDuoGameState, useDuoGameState } from "../../../hooks/useDuoGameState";
 import { useLeaveGame } from "../../../hooks/useLeaveGame";
 import { Maybe } from "../../../util";
 import { StyledButton } from "../../button";
+import { DuoAskerChoosing, DuoAskingQuestion, DuoScorePage, DuoChoosePoints } from "./elements";
 
 interface Props {}
 
 // const logger = getLogger("game::GameRound");
 
 export const DuoGameRound: React.FC<Props> = (props: Props) => {
-  const gameState = useGameState();
-  const currentGame = useCurrentGameState();
+  const gameState = useDuoGameState();
+  const currentGame = useCurrentDuoGameState();
   const leaveGameLogic = useLeaveGame();
 
   let stateElement: Maybe<React.ReactNode> = null;
 
-  // if (currentGame.state === "choosing") {
-  //   stateElement = <AskerChoosing />;
-  // } else if (currentGame.state === "asking") {
-  //   stateElement = <AskingQuestion />;
-  // } else if (currentGame.state === "scores") {
-  //   stateElement = <ScorePage />;
-  // }
+  if (currentGame.state === "points") {
+    stateElement = <DuoChoosePoints />
+  } else if (currentGame.state === "choosing") {
+    stateElement = <DuoAskerChoosing />;
+  } else if (currentGame.state === "asking") {
+    stateElement = <DuoAskingQuestion />;
+  } else if (currentGame.state === "scores") {
+    stateElement = <DuoScorePage />;
+  }
 
   return (
     <React.Fragment>

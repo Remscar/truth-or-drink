@@ -18,7 +18,6 @@ import {
   SelectedPlayersDto,
   ToDGameState,
 } from "../shared";
-import { useSocket } from "./useSocket";
 import { useGameSocket } from "./useGameSocket";
 
 export * from "./useGameStateHelpers";
@@ -135,6 +134,10 @@ export const GameStateContextProvider: React.FC = (props) => {
         if (data.success && data.state) 
         {
           const state = data.state as ToDGameState;
+          if (state.type !== 'party') {
+            logger.debug(`Ignoring join success since it's the wrong game type`);
+            resolve({value: false, error: `wrong game type`});
+          }
           setPlayerInfo(player);
           updateGameState(state);
         }

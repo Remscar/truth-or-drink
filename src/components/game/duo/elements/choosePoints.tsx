@@ -2,15 +2,18 @@ import React from "react";
 import { Maybe } from "../../../../util";
 import { Grid, makeStyles, Typography } from "@material-ui/core";
 import { StyledButton } from "../../../button";
-import { useCurrentDuoGameState, useDuoGameState } from "../../../../hooks/useDuoGameState";
+import {
+  useCurrentDuoGameState,
+  useDuoGameState,
+} from "../../../../hooks/useDuoGameState";
 
 const useStyles = makeStyles((theme) => ({
   question: {
     padding: "8px",
   },
   title: {
-    paddingBottom: "32px"
-  }
+    paddingBottom: "32px",
+  },
 }));
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -22,19 +25,15 @@ export const DuoChoosePoints: React.FC = (props) => {
   const localPlayer = gameState.playerInfo;
   const round = currentGame.currentRound;
   const questionPointValues = currentGame.questionPointValues;
-  const turn = round?.turn;
 
-  if (
-    !currentGame ||
-    !localPlayer ||
-    !round ||
-    turn === undefined
-  ) {
+  const actingPlayer = currentGame.dealer;
+
+  if (!currentGame || !localPlayer || !round || !actingPlayer) {
     return <div>Broken asker choosing</div>;
   }
 
   //const isInvolved = involvedPlayers.findIndex(e => e.name === localPlayer.name);
-  const actingPlayer = round.playerOrder[turn];
+  
   //const otherPlayer = round.playerOrder[(turn + 1) % 2];
 
   const isPlayerTurn = actingPlayer.name === localPlayer.name;
@@ -54,18 +53,20 @@ export const DuoChoosePoints: React.FC = (props) => {
             <Typography variant="h3" align="center" className={classes.title}>
               Choose
             </Typography>
-            <Typography align="center">
-              Choose between these two questions which should be worth more points to answer.
+            <Typography>
+              Choose between these two questions which should be worth more
+              points to answer.
             </Typography>
           </Grid>
           <Grid item>
-            <Typography align="center">
-              The other player will have the option between choosing which question they want to answer.
+            <Typography>
+              The other player will have the option between choosing which
+              question they want to answer.
             </Typography>
-            <Typography align="center">
+            <Typography style={{paddingTop: '12px'}}>
               {`The chosen question will be worth ${questionPointValues[0]} points.`}
             </Typography>
-            <Typography align="center">
+            <Typography>
               {`The other question will be worth ${questionPointValues[1]}.`}
             </Typography>
           </Grid>
@@ -81,7 +82,9 @@ export const DuoChoosePoints: React.FC = (props) => {
                     realClassName ? realClassName : ""
                   }`}
                 >
-                  <Typography style={{fontWeight: 'bold'}}>{`Question ${alphabet[index]}`}</Typography>
+                  <Typography
+                    style={{ fontWeight: "bold" }}
+                  >{`Question ${alphabet[index]}`}</Typography>
                   <Typography>{question}</Typography>
                 </Grid>
               );
@@ -95,20 +98,22 @@ export const DuoChoosePoints: React.FC = (props) => {
           <Grid
             item
             container
-            direction="row"
-            justify="space-around"
+            direction="column"
             style={{ paddingTop: "24px" }}
           >
             {questions.map((question: string, index: number) => {
               const color = index ? "blue" : "red";
               return (
-                <StyledButton
-                  key={index}
-                  color={color}
-                  onClick={() => choseQuestion(index)}
-                >
-                  {`Question ${alphabet[index]} is worth ${questionPointValues[0]} points.`}
-                </StyledButton>
+                <Grid key={index} item style={{ paddingTop: "24px" }}>
+                  <StyledButton
+                    key={index}
+                    color={color}
+                    onClick={() => choseQuestion(index)}
+                    fullWidth
+                  >
+                    {`Question ${alphabet[index]} is worth ${questionPointValues[0]} points.`}
+                  </StyledButton>
+                </Grid>
               );
             })}
           </Grid>
@@ -120,7 +125,11 @@ export const DuoChoosePoints: React.FC = (props) => {
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
-            <Typography variant="h3" align="center" style={{paddingBottom: '12px'}}>
+            <Typography
+              variant="h3"
+              align="center"
+              style={{ paddingBottom: "12px" }}
+            >
               Waiting...
             </Typography>
             <Typography align="center">

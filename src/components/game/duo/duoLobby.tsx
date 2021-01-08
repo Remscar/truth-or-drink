@@ -60,7 +60,7 @@ export const DuoGameLobby: React.FC = (props) => {
         <Grid item container direction="row" justify="space-around">
           {currentGame.isOwner ? (
             <Grid item>
-              <StyledButton disabled={canStartGame} color="red" onClick={onStartGame}>
+              <StyledButton disabled={!canStartGame} color="red" onClick={onStartGame}>
                 Start Game
               </StyledButton>
             </Grid>

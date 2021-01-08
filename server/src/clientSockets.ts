@@ -136,7 +136,8 @@ export const registerNewClientConnection = (socket: Socket) => {
 
     // no security for now, should add later
     if (game.type === "duo") {
-      await (game as DuoGameState).playersChosen(data.players);
+      //await (game as DuoGameState).playersChosen(data.players);
+      throw Error(`invalid socket command for duo game.`);
     } else {
       await (game as PartyGameState).playersChosen(data.players);
     }
@@ -190,7 +191,8 @@ export const registerNewClientConnection = (socket: Socket) => {
     logger.log(`${player.name} chose ${data.winner.name} as the winner`);
 
     if (game.type === "duo") {
-      await (game as DuoGameState).playerChoseWinner(data.winner);
+      //await (game as DuoGameState).playerChoseWinner(data.winner);
+      throw Error(`invalid socket command for duo game.`);
     } else {
       await (game as PartyGameState).playerChoseWinner(data.winner);
     }
@@ -222,7 +224,8 @@ export const registerNewClientConnection = (socket: Socket) => {
     logger.log(`${player.name} liked ${data.player.name}'s answer`);
 
     if (game.type === "duo") {
-      await (game as DuoGameState).playerLikedAnswer(player, data.player);
+      //await (game as DuoGameState).playerLikedAnswer(player, data.player);
+      throw Error(`invalid socket command for duo game.`);
     } else {
       await (game as PartyGameState).playerLikedAnswer(player, data.player);
     }

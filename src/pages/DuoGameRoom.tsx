@@ -1,6 +1,6 @@
 import * as React from "react";
 import { DuoGame } from "../components/game/duo/duoMain";
-import { RequireGameState } from "../hooks/useGameState";
+import { RequireDuoGameState } from "../hooks/useDuoGameStateHelpers";
 
 interface Props {}
 
@@ -11,8 +11,8 @@ export const DuoGameRoom: React.FC<Props> = (props: Props) => {
   //const currentGame = useCurrentGameState();
 
   return (
-    <RequireGameState>
+    <RequireDuoGameState>
       <DuoGame />
-    </RequireGameState>
+    </RequireDuoGameState>
   );
 };

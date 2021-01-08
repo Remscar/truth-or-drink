@@ -1,5 +1,4 @@
 import React from "react";
-import { PlayerInfo } from "../../../../shared";
 import { Maybe } from "../../../../util";
 import { Grid, makeStyles, Typography } from "@material-ui/core";
 import { StyledButton } from "../../../button";
@@ -23,21 +22,23 @@ export const DuoAskerChoosing: React.FC = (props) => {
   const localPlayer = gameState.playerInfo;
   const round = currentGame.currentRound;
   const turn = round?.turn;
+  const questionPoints = round?.questionPoints;
 
   if (
     !currentGame ||
     !localPlayer ||
     !round ||
+    !questionPoints ||
     turn === undefined
   ) {
     return <div>Broken asker choosing</div>;
   }
 
   //const isInvolved = involvedPlayers.findIndex(e => e.name === localPlayer.name);
-  const actingPlayer = round.playerOrder[turn];
-  const otherPlayer = round.playerOrder[(turn + 1) % 2];
+  const answeringPlayer = round.playerOrder[turn];
+  const askingPlayer = round.playerOrder[(turn + 1) % 2];
 
-  const isPlayerTurn = actingPlayer.name === localPlayer.name;
+  const isPlayerTurn = askingPlayer.name === localPlayer.name;
   const questions = round.questions;
 
   let displayComponent: Maybe<React.ReactNode> = null;
@@ -55,7 +56,7 @@ export const DuoAskerChoosing: React.FC = (props) => {
               Choose
             </Typography>
             <Typography align="center">
-              Choose one of the following questions to ask {otherPlayer.name}.
+              Choose one of the following questions to ask {answeringPlayer.name}.
             </Typography>
           </Grid>
           <Grid item>
@@ -75,7 +76,7 @@ export const DuoAskerChoosing: React.FC = (props) => {
                     realClassName ? realClassName : ""
                   }`}
                 >
-                  <Typography style={{fontWeight: 'bold'}}>{`Question ${alphabet[index]} for ${round.questionPoints[index]}`}</Typography>
+                  <Typography style={{fontWeight: 'bold'}}>{`Question ${alphabet[index]} for ${questionPoints[index]} points`}</Typography>
                   <Typography>{question}</Typography>
                 </Grid>
               );
@@ -89,20 +90,25 @@ export const DuoAskerChoosing: React.FC = (props) => {
           <Grid
             item
             container
-            direction="row"
-            justify="space-around"
+            direction="column"
             style={{ paddingTop: "24px" }}
           >
             {questions.map((question: string, index: number) => {
               const color = index ? "blue" : "red";
               return (
-                <StyledButton
+                <Grid item 
+                key={index}
+                style={{ paddingTop: "24px" }}>
+                  <StyledButton
                   key={index}
                   color={color}
                   onClick={() => choseQuestion(index)}
+                  fullWidth
                 >
-                  {`Question ${alphabet[index]} (${round.questionPoints[index]})`}
+                  {`Question ${alphabet[index]} for ${questionPoints[index]} points`}
                 </StyledButton>
+                </Grid>
+                
               );
             })}
           </Grid>
@@ -118,7 +124,7 @@ export const DuoAskerChoosing: React.FC = (props) => {
               Waiting...
             </Typography>
             <Typography align="center">
-              {`${actingPlayer.name} is choosing which question they want to ask ${otherPlayer.name}.`}
+              {`${askingPlayer.name} is choosing which question they want to ask you.`}
             </Typography>
           </Grid>
         </Grid>

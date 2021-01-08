@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const ScorePage: React.FC = (props) => {
+export const DuoScorePage: React.FC = (props) => {
   const classes = useStyles();
   const gameState = useDuoGameState();
   const currentGame = useCurrentDuoGameState();
@@ -92,7 +92,7 @@ export const ScorePage: React.FC = (props) => {
             return (
               <Grid key={data.player} item>
                 <Typography className={classes.scoreLine} style={{whiteSpace: "break-spaces"}}>
-                  {`${index === 0 ? `👑` : ``}${topLiked ? `❤️` : ``} ${data.player.padEnd(24)} ${data.score} (${numLikes} 👍)`}
+                  {`${index === 0 ? `👑` : ``}${data.player.padEnd(24)} ${data.score} points`}
                 </Typography>
               </Grid>
             );

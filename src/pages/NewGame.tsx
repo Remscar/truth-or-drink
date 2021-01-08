@@ -36,7 +36,9 @@ export const NewGame: React.FC<Props> = (props: Props) => {
 
   const [createButtonEnabled, setCreateButtonEnabled] = React.useState(false);
   const [creatingGame, setCreatingGame] = React.useState(false);
-  const [sendToGameRoom, setSendToGameRoom] = React.useState(false);
+  const [sendToPartyGameRoom, setSendToPartyGameRoom] = React.useState(false);
+  const [sendToDuoGameRoom, setSendToDuoGameRoom] = React.useState(false);
+
   const [selectedDecks, setSelectedDecks] = React.useState<string[]>([DeckTypes.Rocks]);
 
   const gameState = useGameState();
@@ -51,7 +53,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
     setCreatingGame(true);
     await gameState.createGame(playerDataInput.playerInfo, selectedDecks);
     setCreatingGame(false);
-    setSendToGameRoom(true);
+    setSendToPartyGameRoom(true);
   };
 
   const onCreateDuoGame = async () => {
@@ -59,7 +61,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
     setCreatingGame(true);
     await duoGameState.createGame(playerDataInput.playerInfo, selectedDecks);
     setCreatingGame(false);
-    setSendToGameRoom(true);
+    setSendToDuoGameRoom(true);
   };
 
   const isDeckSelected = (deck: string) => {
@@ -91,7 +93,8 @@ export const NewGame: React.FC<Props> = (props: Props) => {
 
   return (
     <React.Fragment>
-      {sendToGameRoom ? <Redirect to={"/game"} /> : null}
+      {sendToPartyGameRoom ? <Redirect to={"/game"} /> : null}
+      {sendToDuoGameRoom ? <Redirect to={"/duos"} /> : null}
       <Grid container direction="column" spacing={2}>
         <Grid item>
           <Typography variant="h3">New Game</Typography>
@@ -126,7 +129,7 @@ export const NewGame: React.FC<Props> = (props: Props) => {
         <Grid item>
           <StyledButton
             disabled={!createButtonEnabled || creatingGame || selectedDecks.length === 0}
-            color="blue"
+            color="red"
             fullWidth
             onClick={onCreateGame}
           >

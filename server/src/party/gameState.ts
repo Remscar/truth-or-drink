@@ -4,9 +4,9 @@ import {
   getLogger,
   IMap,
   Maybe,
+  PartyRound,
   PlayerGameState,
   PlayerInfo,
-  Round,
   RoundState,
   ToDGameState,
 } from "../../util";
@@ -19,7 +19,7 @@ import { BaseGameState } from "../baseGameState";
 import { Player } from "../player";
 import { TruthOrDrinkGame } from "../todGame";
 
-const logger = getLogger("gameState");
+const logger = getLogger("party::gameState");
 
 const pointsForSkipping = -5;
 const pointsForAnswering = 0;
@@ -35,7 +35,7 @@ export class PartyGameState extends BaseGameState {
   private _dealer: Maybe<PlayerInfo> = null;
   private _roundState: RoundState = "waiting";
 
-  private _currentRound: Maybe<Round> = null;
+  private _currentRound: Maybe<PartyRound> = null;
 
   private _playerData: IMap<ExtendedPlayerGameState> = {};
 
@@ -51,7 +51,7 @@ export class PartyGameState extends BaseGameState {
   private _timerEnd: number = 0;
 
   public constructor(public code: string, owner: Player, destroyCallback: Function, decks?: string[]) {
-    super(code, owner, destroyCallback);
+    super('party', code, owner, destroyCallback);
 
     this._game = new TruthOrDrinkGame(
       decks ?? [DeckTypes.Rocks, DeckTypes.Spicy, DeckTypes.Happy]
@@ -178,6 +178,7 @@ export class PartyGameState extends BaseGameState {
       owner: e === ownerPlayer,
     }));
     const state = {
+      type: this.type,
       gameCode: this.code,
       started: this.started,
       owner: ownerPlayer.socket.id,

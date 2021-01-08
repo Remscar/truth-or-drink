@@ -1,20 +1,22 @@
 import React from "react";
-import { PlayerInfo } from "../../../../shared";
 import { Maybe } from "../../../../util";
 import { Grid, makeStyles, Typography } from "@material-ui/core";
 import { StyledButton } from "../../../button";
-import { useCurrentDuoGameState, useDuoGameState } from "../../../../hooks/useDuoGameState";
+import {
+  useCurrentDuoGameState,
+  useDuoGameState,
+} from "../../../../hooks/useDuoGameState";
 
 const useStyles = makeStyles((theme) => ({
   question: {
     paddingTop: "32px",
   },
   title: {
-    paddingBottom: "32px"
-  }
+    paddingBottom: "32px",
+  },
 }));
 
-export const AskingQuestion: React.FC = (props) => {
+export const DuoAskingQuestion: React.FC = (props) => {
   const classes = useStyles();
   const gameState = useDuoGameState();
   const currentGame = useCurrentDuoGameState();
@@ -33,38 +35,39 @@ export const AskingQuestion: React.FC = (props) => {
     return <div>Broken ask questions</div>;
   }
 
-  const actingPlayer = round.playerOrder[turn % 2];
-  const otherPlayer = round.playerOrder[(turn + 1) % 2];
+  const answeringPlayer = round.playerOrder[turn];
+  const askingPlayer = round.playerOrder[(turn + 1) % 2];
 
-  const isOtherPlayer = localPlayer.name === otherPlayer.name;
-
-  const isPlayerTurn = actingPlayer.name === localPlayer.name;
+  const isAnsweringPlayer = localPlayer.name === answeringPlayer.name;
+  const isAskingPlayer = askingPlayer.name === localPlayer.name;
 
   const questionIndexToAsk = questionIndicesToAsk[turn];
   const askedQuestion = round.questions[questionIndexToAsk];
 
   const playerAnswered = async (didTheyAnswer: boolean) => {
-    await gameState.playerAnsweredQuestion(didTheyAnswer, otherPlayer);
+    await gameState.playerAnsweredQuestion(didTheyAnswer, answeringPlayer);
   };
 
   let displayComponent: Maybe<React.ReactNode> = null;
 
-  if (isPlayerTurn) {
+  if (isAskingPlayer) {
     displayComponent = (
       <React.Fragment>
         <Grid container direction="column">
           <Grid item>
-            <Typography variant='h3' align="center" className={classes.title}>
+            <Typography variant="h3" align="center" className={classes.title}>
               Ask
             </Typography>
           </Grid>
           <Grid item>
             <Typography align="center">
-              Ask {otherPlayer.name} this question:
+              Ask {answeringPlayer.name} this question:
             </Typography>
           </Grid>
           <Grid item className={classes.question}>
-            <Typography align="center" style={{fontWeight: 'bold'}}>{askedQuestion}</Typography>
+            <Typography align="center" style={{ fontWeight: "bold" }}>
+              {askedQuestion}
+            </Typography>
           </Grid>
 
           <Grid item style={{ paddingTop: "72px" }}>
@@ -87,7 +90,7 @@ export const AskingQuestion: React.FC = (props) => {
         </Grid>
       </React.Fragment>
     );
-  } else if (isOtherPlayer) {
+  } else if (isAnsweringPlayer) {
     displayComponent = (
       <React.Fragment>
         <Grid container direction="column">
@@ -95,14 +98,19 @@ export const AskingQuestion: React.FC = (props) => {
             Answer?
           </Typography>
           <Typography align="center">
-            {`${actingPlayer.name} will ask you a question.`}
+            {`${askingPlayer.name} will ask you a question.`}
           </Typography>
-          <Typography align="center" style={{paddingTop: '12px'}}>
+          <Typography align="center" style={{ paddingTop: "12px" }}>
             You can either answer it, or skip (drink.)
           </Typography>
 
-          <Typography variant="subtitle1" align="center" style={{paddingTop: '24px'}}>
-            Try to give your most authentic, truthful and potentially revealing answer.
+          <Typography
+            variant="subtitle1"
+            align="center"
+            style={{ paddingTop: "24px" }}
+          >
+            Try to give your most authentic, truthful and potentially revealing
+            answer.
           </Typography>
 
           <Grid
@@ -113,17 +121,23 @@ export const AskingQuestion: React.FC = (props) => {
             style={{ paddingTop: "72px" }}
           >
             <Grid item>
-            <StyledButton fullWidth color={"red"} onClick={() => playerAnswered(true)}>
-              {`I answered`}
-            </StyledButton>
+              <StyledButton
+                fullWidth
+                color={"red"}
+                onClick={() => playerAnswered(true)}
+              >
+                {`I answered`}
+              </StyledButton>
             </Grid>
-            <Grid item style={{paddingTop: "24px"}}>
-            <StyledButton fullWidth color={"blue"} onClick={() => playerAnswered(false)}>
-              {`I skipped (or drank)`}
-            </StyledButton>
+            <Grid item style={{ paddingTop: "24px" }}>
+              <StyledButton
+                fullWidth
+                color={"blue"}
+                onClick={() => playerAnswered(false)}
+              >
+                {`I skipped (or drank)`}
+              </StyledButton>
             </Grid>
-            
-            
           </Grid>
         </Grid>
       </React.Fragment>

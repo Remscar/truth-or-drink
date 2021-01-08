@@ -26,18 +26,27 @@ export interface PlayerGameState {
 }
 
 export type RoundState = "waiting" | "dealing" | "choosing" | "asking" | "scoring" | "scores";
-export type DuoRoundState = "waiting" | "choosing" | "asking" |  "scores";
+export type DuoRoundState = "waiting" | "points" | "choosing" | "asking" |  "scores";
 
 export type GameType = "duo" | "party";
 
-
 export interface Round {
   questions: [string, string];
+}
+
+export interface PartyRound extends Round {
   players?: PlayerInfo[];
   turn?: number;
   questionsToAsk?: number[];
   likedAnswers?:  {[name: string]: string[]}
   likesForPlayers?: number[];
+}
+
+export interface DuoRound extends Round {
+  playerOrder: [PlayerInfo, PlayerInfo];
+  turn?: number;
+  questionsToAsk?: number[];
+  questionPoints?: [number, number];
 }
 
 export interface BaseToDGameState {
@@ -51,7 +60,7 @@ export interface ToDGameState extends BaseToDGameState {
   players: PlayerInfo[];
   state: RoundState;
   dealer: Maybe<PlayerInfo>;
-  currentRound: Maybe<Round>;
+  currentRound: Maybe<PartyRound>;
   playerChoices: PlayerInfo[];
   playerStates: IMap<PlayerGameState>;
   someoneSkipped: boolean;
@@ -66,13 +75,6 @@ export interface BaseCompleteGameStateDto extends Dto, BaseToDGameState {
 export interface CompleteGameStateDto extends BaseCompleteGameStateDto, ToDGameState {
 }
 
-export interface DuoRound {
-  questions: [string, string];
-  questionPoints: [number, number];
-  questionsToAsk?: number[];
-  playerOrder: [PlayerInfo, PlayerInfo];
-  turn?: number;
-}
 
 export interface DuoToDGameState extends BaseToDGameState {
   gameCode: string;
@@ -81,9 +83,9 @@ export interface DuoToDGameState extends BaseToDGameState {
   players: PlayerInfo[];
   state: DuoRoundState;
   dealer: Maybe<PlayerInfo>;
-  questionPointValues: number[];
   currentRound: Maybe<DuoRound>;
   playerStates: IMap<PlayerGameState>;
+  questionPointValues: [number, number];
 }
 
 export interface CompleteDuoGameStateDto extends BaseCompleteGameStateDto, DuoToDGameState {

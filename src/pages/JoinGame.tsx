@@ -4,7 +4,9 @@ import { Redirect } from "react-router-dom";
 import { StyledButton } from "../components/button";
 import { useDataPlayerInput } from "../components/useDataPlayerInput";
 import { useGameCodeInput } from "../components/useGameCodeInput";
+import { useDuoGameState } from "../hooks/useDuoGameState";
 import { useGameState } from "../hooks/useGameState";
+import { GameType } from "../shared";
 import { getLogger } from "../util";
 
 interface Props {}
@@ -15,15 +17,20 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
   const playerDataInput = useDataPlayerInput();
   const gameCodeInput = useGameCodeInput();
   const gameState = useGameState();
+  const duoGameState = useDuoGameState();
 
   const [joinButtonEnabled, setJoinButtonEnabled] = React.useState(false);
   const [joiningGame, setJoiningGame] = React.useState(false);
   const [joinError, setJoinError] = React.useState(false);
   const [joinErrorMessage, setJoinErrorMessage] = React.useState("");
-  const [sendToGameRoom, setSendToGameRoom] = React.useState(false);
+
+  const [sendToPartyGameRoom, setSendToPartyGameRoom] = React.useState(false);
+  const [sendToDuoGameRoom, setSendToDuoGameRoom] = React.useState(false);
 
   React.useEffect(() => {
-    setJoinButtonEnabled(playerDataInput.isValid && gameCodeInput.code.length > 0);
+    setJoinButtonEnabled(
+      playerDataInput.isValid && gameCodeInput.code.length > 0
+    );
   }, [playerDataInput]);
 
   const onJoinGame = async () => {
@@ -32,10 +39,21 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
     );
 
     setJoiningGame(true);
-    const res = await gameState.joinGame(
+    let mode: GameType = 'party';
+
+    let res = await gameState.joinGame(
       playerDataInput.playerInfo,
       gameCodeInput.code
     );
+
+    if (res.error) {
+      res = await duoGameState.joinGame(
+        playerDataInput.playerInfo,
+        gameCodeInput.code
+      );
+      mode = 'duo';
+    }
+
     setJoiningGame(false);
 
     logger.log(res);
@@ -43,14 +61,20 @@ export const JoinGame: React.FC<Props> = (props: Props) => {
     if (res.error) {
       setJoinError(true);
       setJoinErrorMessage(res.error);
+      return;
+    }
+
+    if (mode === 'party') {
+      setSendToPartyGameRoom(true);
     } else {
-      setSendToGameRoom(true);
+      setSendToDuoGameRoom(true);
     }
   };
 
   return (
     <React.Fragment>
-      {sendToGameRoom ? <Redirect to={"/game"} /> : null}
+      {sendToPartyGameRoom ? <Redirect to={"/game"} /> : null}
+      {sendToDuoGameRoom ? <Redirect to={"/duos"} /> : null}
       <Grid container direction="column" spacing={2}>
         <Grid item>
           <Typography variant="h3">Join Game</Typography>

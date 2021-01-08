@@ -1,6 +1,10 @@
 import {
+  CompleteDuoGameStateDto,
   CompleteGameStateDto,
   DeckTypes,
+  DuoRound,
+  DuoRoundState,
+  DuoToDGameState,
   getLogger,
   IMap,
   Maybe,
@@ -13,19 +17,18 @@ import {
 import {
   randomElementFromArray,
   shuffleArray,
+  toExistingPlayerInfo,
   toPlayerInfo,
 } from "../../util/helpers";
 import { BaseGameState } from "../baseGameState";
 import { Player } from "../player";
 import { TruthOrDrinkGame } from "../todGame";
 
-const logger = getLogger("gameState");
+const logger = getLogger("duo::gameState");
 
-const pointsForSkipping = -5;
-const pointsForAnswering = 0;
-const pointsForWinning = 5;
-const pointsForLiking = 1;
-const minimumVotingDuration = 10;
+
+
+const pointsForSkipping = 0;
 
 interface ExtendedPlayerGameState extends PlayerGameState {
   player: Player;
@@ -33,25 +36,19 @@ interface ExtendedPlayerGameState extends PlayerGameState {
 
 export class DuoGameState extends BaseGameState {
   private _dealer: Maybe<PlayerInfo> = null;
-  private _roundState: RoundState = "waiting";
+  private _roundState: DuoRoundState = "waiting";
+  private _questionPointValues: [number, number] = [2, 1];
 
-  private _currentRound: Maybe<Round> = null;
+  private _currentRound: Maybe<DuoRound> = null;
 
   private _playerData: IMap<ExtendedPlayerGameState> = {};
 
-  private _playerChoices: PlayerInfo[] = [];
-
   private _lastDealer: Maybe<PlayerInfo> = null;
-
-  private _someoneSkippedAnswering = false;
-  private _winnerChosen = false;
 
   private _game: TruthOrDrinkGame;
 
-  private _timerEnd: number = 0;
-
   public constructor(public code: string, owner: Player, destroyCallback: Function, decks?: string[]) {
-    super(code, owner, destroyCallback);
+    super('duo', code, owner, destroyCallback);
 
     this._game = new TruthOrDrinkGame(
       decks ?? [DeckTypes.Rocks, DeckTypes.Spicy, DeckTypes.Happy]
@@ -115,12 +112,7 @@ export class DuoGameState extends BaseGameState {
       return false;
     }
 
-    const state = this.createPlayerStateIfNotExists(player);
-    const fewestTimesAPlayerHasBeenChosen = this.getFewestTimesChosen();
-    state.timesChosen = Math.max(fewestTimesAPlayerHasBeenChosen, state.timesChosen);
-
-    this.calculatePlayerChoices();
-
+    this.createPlayerStateIfNotExists(player);
     return true;
   }
 
@@ -131,21 +123,7 @@ export class DuoGameState extends BaseGameState {
       return shouldDestroy;
     }
 
-    this.calculatePlayerChoices();
-
-    if (this._dealer?.name === player.name) {
-      this._dealer = this.getPlayers(true)[0];
-      this.newRound();
-    } else if (this._currentRound && this._currentRound.players) {
-      const foundIndex = this._currentRound.players.findIndex(
-        (e) => e.name === player.name
-      );
-      if (foundIndex > -1) {
-        this.newRound();
-      }
-    }
-
-    if (this.getPlayers(true).length < 3) {
+    if (this.getPlayers(true).length < 2) {
       this.gotoLobby();
     }
 
@@ -171,13 +149,13 @@ export class DuoGameState extends BaseGameState {
     return states;
   }
 
-  public currentGameState(): ToDGameState {
+  public currentGameState(): DuoToDGameState {
     const ownerPlayer = this.owner;
     const safePlayerList = this.getPlayers(true).map((e) => ({
       name: e.name,
       owner: e === ownerPlayer,
     }));
-    const state = {
+    const state: DuoToDGameState = {
       type: this.type,
       gameCode: this.code,
       started: this.started,
@@ -187,10 +165,7 @@ export class DuoGameState extends BaseGameState {
       dealer: toPlayerInfo(this.dealer),
       currentRound: this._currentRound,
       playerStates: this.createPlayerGameSateForDto(),
-      playerChoices: this._playerChoices.map((e) => ({ name: e.name })),
-      timerEnd: this._timerEnd,
-      someoneSkipped: this._someoneSkippedAnswering,
-      winnerChosen: this._winnerChosen
+      questionPointValues: this._questionPointValues
     };
 
     return state;
@@ -198,8 +173,8 @@ export class DuoGameState extends BaseGameState {
 
   public sendGameState = () => {
     const currentState = this.currentGameState();
-    const dto: CompleteGameStateDto = {
-      ...currentState,
+    const dto: CompleteDuoGameStateDto = {
+      ...currentState
     };
     logger.debug(`Sending game state to all players in ${this.code}`);
 
@@ -212,115 +187,56 @@ export class DuoGameState extends BaseGameState {
     this._dealer = this.owner;
   }
 
-  private getFewestTimesChosen(): number {
-    const playerStates = this.getPlayerStates(true);
-
-    let fewestTimesChosen = 9999999;
-    Object.values(playerStates).forEach(e => {
-      if (e.timesChosen < fewestTimesChosen) {
-        fewestTimesChosen = e.timesChosen;
-      }
-    })
-
-    return fewestTimesChosen;
-  }
-
-  protected calculatePlayerChoices() {
-    const minNumberPlayers = 3;
-    let maxNumTimesChosen = this.getFewestTimesChosen();
-    let playerOptions: string[] = [];
-
-    const playerStates = this.getPlayerStates(true);
-
-    const playerChosenArray = Object.entries(playerStates).map(
-      ([player, playerState]) => ({
-        player,
-        timesChosen: playerState.timesChosen,
-      })
-    );
-    shuffleArray(playerChosenArray);
-
-    if (playerChosenArray.length <= minNumberPlayers) {
-      playerOptions = playerChosenArray.map((e) => e.player);
-    } else {
-      while (playerOptions.length < minNumberPlayers) {
-        const choosablePlayers = playerChosenArray.filter(
-          (e) => e.timesChosen < maxNumTimesChosen
-        );
-
-        if (choosablePlayers.length === 0) {
-          ++maxNumTimesChosen;
-          continue;
-        }
-
-        // We have less than needed # of players left to choose from
-        if (choosablePlayers.length < minNumberPlayers) {
-          playerOptions = playerOptions.concat(
-            choosablePlayers.map((e) => e.player)
-          );
-          const numAlreadyChosen = playerOptions.length;
-          const extraChoices = minNumberPlayers - numAlreadyChosen;
-
-          const extraPlayers = playerChosenArray.filter(
-            (e) => e.timesChosen >= maxNumTimesChosen
-          );
-          for (let i = 0; i < extraChoices && i < extraPlayers.length; ++i) {
-            playerOptions.push(extraPlayers[i].player);
-          }
-
-          break;
-        }
-
-        playerOptions = choosablePlayers.map((e) => e.player);
-      }
-    }
-
-    this._playerChoices = playerOptions.map((e) => ({ name: e } as PlayerInfo));
-  }
-
   public async gotoLobby() {
     this._roundState = "waiting";
     this._started = false;
   }
 
-  public async newRound() {
-    // choose round type
-    const newRound = this._game.nextRound();
-
-    this.calculatePlayerChoices();
-    this._roundState = "dealing";
-    this._currentRound = newRound;
-
-    this._someoneSkippedAnswering = false;
-    this._winnerChosen = false;
+  private getOtherPlayer() {
+    const otherPlayer = this.getPlayers(true).filter(e => e.name !== this.dealer?.name)[0];
+    return otherPlayer;
   }
 
-  public async playersChosen(players: PlayerInfo[]) {
-    if (this._roundState != "dealing") {
-      throw Error(`Not choosing state`);
+  public async newRound() {
+    // choose round type
+    const newRoundBase = this._game.nextRound();
+
+    if (!this._dealer) {
+      this._dealer = this.owner;
+    }
+    if (!this.dealer) {
+      throw Error(`no dealer?`);
     }
 
+    const dealerAsPlayerInfo = toExistingPlayerInfo(this.dealer);
+    const otherPlayerAsPlayerInfo = toExistingPlayerInfo(this.getOtherPlayer());
+
+    const newRound: DuoRound = {
+      ...newRoundBase,
+      playerOrder: [dealerAsPlayerInfo, otherPlayerAsPlayerInfo],
+      turn: 0
+    }
+
+    this._roundState = "points";
+    this._currentRound = newRound;
+  }
+
+  private playerChoseHighPointQuestion(index: number) {
     if (!this._currentRound) {
       throw Error("no current round!");
     }
 
-    logger.debug(`Players chosen for ${this.code}`);
-    
-    for (const player of players) {
-      this.getPlayerState(player).timesChosen += 1;
-    }
-
-    this._currentRound.players = players;
-    this._currentRound.turn = 0;
     this._roundState = "choosing";
-    this._currentRound.likesForPlayers = this._currentRound.players.map(() => 0);
+
+    // set question point values
+    const otherQuestionIndex = (index + 1) % 2;
+
+    this._currentRound.questionPoints = [0, 0];
+    this._currentRound.questionPoints[index] = this._questionPointValues[0];
+    this._currentRound.questionPoints[otherQuestionIndex] = this._questionPointValues[1];
   }
 
-  public async playerChoseQuestion(index: number) {
-    if (this._roundState != "choosing") {
-      throw Error(`Not choosing state`);
-    }
-
+  private playerChoseQuestionToAsk(index: number) {
     if (!this._currentRound) {
       throw Error("no current round!");
     }
@@ -346,19 +262,28 @@ export class DuoGameState extends BaseGameState {
     this._currentRound.questionsToAsk = questionOrder;
   }
 
-  private chooseNextDealer(): PlayerInfo {
-    const dealerOptions = Object.assign([], this.getPlayers()) as Player[];
-    if (this._lastDealer) {
-      const lastDealerName = this._lastDealer.name;
-      const dealerIndex = dealerOptions.findIndex(
-        (e) => e.name === lastDealerName
-      );
-      if (dealerIndex > -1) {
-        dealerOptions.splice(dealerIndex, 1);
-      }
+  public async playerChoseQuestion(index: number) {
+    if (this._roundState != "choosing" && this._roundState != 'points') {
+      throw Error(`Not in correct state`);
     }
-    const nextDealer = randomElementFromArray(dealerOptions);
-    return nextDealer;
+  
+    if (this._roundState == 'points') {
+      this.playerChoseHighPointQuestion(index);
+      return;
+    }
+    
+    if (this._roundState == "choosing") {
+      this.playerChoseQuestionToAsk(index);
+      return;
+    }
+
+    throw Error(`this shouldn't happen :/`);
+  }
+
+  private chooseNextDealer(): PlayerInfo {
+    const otherPlayer = this.getOtherPlayer();
+
+    return otherPlayer;
   }
 
   protected async addToPlayerScore(player: PlayerInfo, score: number) {
@@ -372,15 +297,6 @@ export class DuoGameState extends BaseGameState {
     playerState.score = newScore;
   }
 
-  protected async addToPlayerLikes(player: PlayerInfo, likes: number) {
-    const playerState = this.getPlayerState(player);
-    const currentScore = playerState.likes;
-    let newLikes = currentScore !== undefined ? currentScore : 0;
-    newLikes += likes;
-
-    playerState.likes = newLikes;
-  }
-
   public async playerAnsweredQuestion(didAnswer: boolean, player: PlayerInfo) {
     if (this._roundState != "asking") {
       throw Error(`Not in the asking state`);
@@ -390,89 +306,38 @@ export class DuoGameState extends BaseGameState {
       throw Error("no current round!");
     }
 
-    if (this._currentRound.turn === undefined || !this._currentRound.players) {
+    if (this._currentRound.turn === undefined || this._currentRound.questionPoints === undefined) {
       throw Error("invalid game state");
     }
 
-    const answeringPlayer = this._currentRound.players[
+    const askingPlayer = this._currentRound.playerOrder[
       (this._currentRound.turn + 1) % 2
     ];
-    const otherPlayer = this._currentRound.players[this._currentRound.turn];
+    const answeringPlayer = this._currentRound.playerOrder[this._currentRound.turn];
 
     if (answeringPlayer.name !== player.name) {
       logger.warn(`Ignoring player answer since it's the wrong player`);
       return;
     }
 
+    const pointsForAnswering = this._currentRound.questionPoints[this._currentRound.turn];
+
     this.addToPlayerScore(
       answeringPlayer,
       didAnswer ? pointsForAnswering : pointsForSkipping
     );
 
-    if (!didAnswer) {
-      this.addToPlayerScore(otherPlayer, pointsForWinning);
-    }
-
     const nextTurn = this._currentRound.turn + 1;
 
-    if (!didAnswer) {
-      this._someoneSkippedAnswering = true;
-    }
-
     if (nextTurn >= this._currentRound.questions.length) {
-      // out of questions in this round, so onto the next
-      this.beginScoring();
+      // out of questions in this round, goto scores
+      this._roundState = "scores";
+      this._dealer = this.chooseNextDealer();
       return;
     }
 
     // Go to the next turn
     this._currentRound.turn = nextTurn;
-  }
-
-  public async beginScoring() {
-    this._roundState = "scoring";
-  }
-
-  public async startEndScoringCountdown() {
-    this._timerEnd = Date.now() + minimumVotingDuration * 1000;
-    this.sendGameState();
-    setTimeout(() => {
-      this.finishScoring();
-      this.sendGameState();
-    }, minimumVotingDuration * 1000 + 2500); // always have a little grace time
-  }
-
-  public async playerChoseWinner(winner: PlayerInfo) {
-    if (this._roundState != "scoring") {
-      throw Error(`Not in the asking state`);
-    }
-
-    if (!this._currentRound) {
-      throw Error("no current round!");
-    }
-
-    if (this._someoneSkippedAnswering) {
-      throw Error(`Can only choose winner if nobody skipped`);
-    }
-
-    if (this._winnerChosen) {
-      throw Error(`Winner has already been chosen.`);
-    }
-
-    this._winnerChosen = true;
-
-    this.addToPlayerScore(winner, pointsForWinning);
-
-    logger.debug(`${winner.name} won the round.`);
-
-    await this.startEndScoringCountdown();
-  }
-
-  public async finishScoring() {
-    this._lastDealer = this._dealer;
-    this._dealer = this.chooseNextDealer();
-
-    this._roundState = "scores";
   }
 
   public async startNextRound() {
@@ -487,56 +352,6 @@ export class DuoGameState extends BaseGameState {
     this.newRound();
   }
 
-  private getLikedAnswers() {
-    if (!this._currentRound) {
-      throw Error("no current round!");
-    }
-
-    if (!this._currentRound.likedAnswers) {
-      this._currentRound.likedAnswers = {};
-    }
-
-    return this._currentRound.likedAnswers;
-  }
-
-  private getPlayersLikedAnswers(player: PlayerInfo) {
-    const likedAnswers = this.getLikedAnswers();
-    if (!likedAnswers[player.name]) {
-      likedAnswers[player.name] = [];
-    }
-
-    return likedAnswers[player.name];
-  }
-
-  public async playerLikedAnswer(player: PlayerInfo, likedPlayer: PlayerInfo) {
-    if (this._roundState != "scoring" && this._roundState != "asking") {
-      throw Error(`Not in the asking state`);
-    }
-
-    if (!this._currentRound) {
-      throw Error("no current round!");
-    }
-
-    if (!this._currentRound.likesForPlayers || !this._currentRound.players) {
-      throw Error(`invalid game state.`);
-    }
-
-    const likedPlayerIndex = this._currentRound.players.findIndex(e => e.name === likedPlayer.name);
-    if (likedPlayerIndex < 0) {
-      throw Error(`Could not find liked player in current round`);
-    }
-
-    const playerAnswers = this.getPlayersLikedAnswers(player);
-    if (playerAnswers.findIndex((e) => e === likedPlayer.name) < 0) {
-      playerAnswers.push(likedPlayer.name);
-      this.addToPlayerScore(likedPlayer, pointsForLiking);
-      this.addToPlayerLikes(likedPlayer, 1);
-
-      this._currentRound.likesForPlayers[likedPlayerIndex] += 1;
-    } else {
-      logger.debug(`${player.name} already voted for ${likedPlayer.name}`);
-    }
-  }
 }
 
 export const createDuoGameState = (
