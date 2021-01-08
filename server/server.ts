@@ -23,16 +23,19 @@ app.get('/', (req, res) => {
 });
 
 app.use('/new', (req, res) => {
-  res.redirect('/new');
+  res.redirect('/');
 });
 app.use('/game', (req, res) => {
   res.redirect('/');
 });
 app.use('/join', (req, res) => {
-  res.redirect('/join');
+  res.redirect('/');
 });
 app.use('/how', (req, res) => {
-  res.redirect('/how');
+  res.redirect('/');
+});
+app.use('/duos', (req, res) => {
+  res.redirect('/');
 });
 
 app.use(express.static(path.join(process.cwd(), "build")));
