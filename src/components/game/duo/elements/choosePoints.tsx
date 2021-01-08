@@ -70,7 +70,7 @@ export const DuoChoosePoints: React.FC = (props) => {
               {`The other question will be worth ${questionPointValues[1]}.`}
             </Typography>
           </Grid>
-          <Grid item container direction="column">
+          <Grid item container direction="column" style={{paddingTop: '32px'}}>
             {questions.map((question: string, index: number) => {
               const className = "question" + index;
               const realClassName = classes[className];
