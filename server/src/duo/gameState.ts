@@ -178,6 +178,7 @@ export class DuoGameState extends BaseGameState {
       owner: e === ownerPlayer,
     }));
     const state = {
+      type: this.type,
       gameCode: this.code,
       started: this.started,
       owner: ownerPlayer.socket.id,

@@ -28,6 +28,7 @@ export interface PlayerGameState {
 export type RoundState = "waiting" | "dealing" | "choosing" | "asking" | "scoring" | "scores";
 export type DuoRoundState = "waiting" | "choosing" | "asking" |  "scores";
 
+export type GameType = "duo" | "party";
 
 
 export interface Round {
@@ -39,7 +40,11 @@ export interface Round {
   likesForPlayers?: number[];
 }
 
-export interface ToDGameState {
+export interface BaseToDGameState {
+  type: GameType;
+}
+
+export interface ToDGameState extends BaseToDGameState {
   gameCode: string;
   owner: string;
   started: boolean;
@@ -65,7 +70,7 @@ export interface DuoRound {
   turn?: number;
 }
 
-export interface DuoToDGameState {
+export interface DuoToDGameState extends BaseToDGameState {
   gameCode: string;
   owner: string;
   started: boolean;
@@ -88,10 +93,11 @@ export interface Dto {
 export interface CreateDto extends Dto {
   creator: PlayerInfo;
   decks?: string[];
+  type: GameType;
 }
 
-export interface CreatedDto extends CompleteGameStateDto {
-
+export interface CreatedDto {
+  state: BaseToDGameState
 }
 
 export interface JoinDto extends Dto {
@@ -101,7 +107,7 @@ export interface JoinDto extends Dto {
 
 export interface JoinedDto extends Dto {
   success: boolean;
-  state: Maybe<ToDGameState>;
+  state: Maybe<BaseToDGameState>;
 }
 
 export interface LeaveGameDto extends Dto {

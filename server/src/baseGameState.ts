@@ -1,4 +1,4 @@
-import { getLogger, PlayerInfo } from "../util";
+import { GameType, getLogger, PlayerInfo } from "../util";
 import { gameManager } from "./party/games";
 import { Player } from "./player";
 import { socketForRoom } from "./serverSockets";
@@ -6,13 +6,13 @@ import { socketForRoom } from "./serverSockets";
 const logger = getLogger("BaseGameState");
 
 export abstract class BaseGameState {
-  private readonly players: Player[];
+  private readonly _players: Player[];
 
   protected _started: boolean = false;
   protected _owner: PlayerInfo;
 
-  public constructor(public code: string, owner: Player, private _destroyCallback: Function) {
-    this.players = [];
+  public constructor(private _type: GameType, public code: string, owner: Player, private _destroyCallback: Function) {
+    this._players = [];
     this._owner = owner;
   }
 
@@ -20,8 +20,12 @@ export abstract class BaseGameState {
     return this._started;
   }
 
+  public get type(): GameType {
+    return this._type;
+  }
+
   public get owner(): Player {
-    const foundOwner = this.players.find((e) => e.name === this._owner.name);
+    const foundOwner = this._players.find((e) => e.name === this._owner.name);
     if (!foundOwner) {
       throw Error(`No Owner Found for game ${this.code}`);
     }
@@ -36,27 +40,27 @@ export abstract class BaseGameState {
     }
     player.socket.join(this.code);
 
-    const existingSocketIndex = this.players.findIndex(
+    const existingSocketIndex = this._players.findIndex(
       (e) => e.socket.id === player.socket.id
     );
-    const existingNameIndex = this.players.findIndex((e) => e.name === player.name);
+    const existingNameIndex = this._players.findIndex((e) => e.name === player.name);
 
     if (existingSocketIndex >= 0) {
       logger.debug(
         `Player with socket ${player.socket.id} was already in the game.`
       );
-      const existingPlayer = this.players[existingSocketIndex];
+      const existingPlayer = this._players[existingSocketIndex];
       existingPlayer.name = player.name;
     } else if (existingNameIndex >= 0) {
       logger.debug(`Player with name ${player.name} was already in name.`);
-      const existingPlayer = this.players[existingNameIndex];
+      const existingPlayer = this._players[existingNameIndex];
       if (existingPlayer.connected) {
         throw Error(`There is a player with that name!`);
       }
       logger.log(`Player has reconnected probably`);
       existingPlayer.socket = player.socket;
     } else {
-      this.players.push(player);
+      this._players.push(player);
     }
 
     return true;
@@ -68,9 +72,9 @@ export abstract class BaseGameState {
     //   gameCode: this.code,
     //   started: this.started,
     //   owner: ownerPlayer.socket.id,
-    //   players: this.players.map((e) => ({ name: e.name, owner: e === ownerPlayer })),
+    //   _players: this._players.map((e) => ({ name: e.name, owner: e === ownerPlayer })),
     // };
-    // logger.debug(`Sending game state to all players in ${this.code}`);
+    // logger.debug(`Sending game state to all _players in ${this.code}`);
 
     // const socket = this.getRoomSocket();
     // socket.emit("completeGameState", dto);
@@ -95,7 +99,7 @@ export abstract class BaseGameState {
   };
 
   private destroyGameIfNeeded() {
-    const connectedPlayers = this.players.filter((e) => e.connected);
+    const connectedPlayers = this._players.filter((e) => e.connected);
 
     if (connectedPlayers.length == 0) {
       logger.log(`All players have left game ${this.code}`);
@@ -109,15 +113,15 @@ export abstract class BaseGameState {
 
   public getPlayers(onlyConnected = true): Player[] {
     if (!onlyConnected) {
-      return Object.assign([], this.players) as Player[];
+      return Object.assign([], this._players) as Player[];
     }
 
-    const connectedPlayers = this.players.filter((e) => e.connected);
+    const connectedPlayers = this._players.filter((e) => e.connected);
     return connectedPlayers;
   }
 
   public async removePlayerFromGame(player: Player) {
-    const index = this.players.findIndex((e) => e.name === player.name);
+    const index = this._players.findIndex((e) => e.name === player.name);
     if (index < 0) {
       logger.log(
         `Tried to remove player ${player.name} from ${this.code} but they aren't there`
@@ -127,10 +131,10 @@ export abstract class BaseGameState {
 
     player.socket.leave(this.code);
 
-    this.players.splice(index, 1);
+    this._players.splice(index, 1);
 
-    if (this.players.length > 0 && this._owner.name === player.name) {
-      this._owner = this.players[0];
+    if (this._players.length > 0 && this._owner.name === player.name) {
+      this._owner = this._players[0];
     }
 
     return this.destroyGameIfNeeded();
@@ -144,6 +148,8 @@ export abstract class BaseGameState {
   protected getRoomSocket = () => {
     return socketForRoom(this.code);
   };
+
+  abstract newRound(): Promise<void>;
 }
 
 // export const createBaseGameState = (code: string, originalOwner: Player) => {

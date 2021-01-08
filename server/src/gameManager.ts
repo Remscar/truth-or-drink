@@ -1,25 +1,33 @@
-import { getLogger, Maybe } from "../../util";
-import { Player } from "../player";
-import { generateGameCode } from "../../util/helpers";
-import { createDuoGameState, DuoGameState } from "./gameState";
+
+import { GameType, getLogger, Maybe } from "../util";
+import { generateGameCode } from "../util/helpers";
+import { BaseGameState } from "./baseGameState";
+import { createDuoGameState } from "./duo/gameState";
+import { createPartyGameState } from "./party";
+import { Player } from "./player";
 
 const logger = getLogger("games");
 
-const games: Map<string, DuoGameState> = new Map<string, DuoGameState>();
+const games: Map<string, BaseGameState> = new Map<string, BaseGameState>();
 
 
 const getGame = (gameCode: string) => {
   return games.get(gameCode);
 }
 
-const createNewGame = async (creator: Player, decks?: string[]) => {
+const createNewGame = async (type: GameType, creator: Player, decks?: string[]) => {
   const gameCode = generateGameCode();
 
   logger.log(`Creating game for ${creator.name} with code ${gameCode}`);
 
-  let newGameState: Maybe<DuoGameState> = null;
+  let newGameState: Maybe<BaseGameState> = null;
   if (!games.has(gameCode)) {
-    newGameState = createDuoGameState(gameCode, creator, destroyGame, decks);
+    if (type === 'duo') {
+      newGameState = createDuoGameState(gameCode, creator, destroyGame, decks);
+    } else {
+      newGameState = createPartyGameState(gameCode, creator, destroyGame, decks);
+    }
+    
     games.set(gameCode, newGameState);
   } else {
     const game = games.get(gameCode);
@@ -53,7 +61,7 @@ const destroyGame = async (gameCode: string) => {
 }
 
 
-export const duoGameManager = {
+export const gameManager = {
   createNewGame,
   joinGame,
   destroyGame
