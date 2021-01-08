@@ -1,16 +1,15 @@
-import { join } from "path";
 import { Socket } from "socket.io";
-import { BaseToDGameState, ChoseQuestionDto, CreatedDto, CreateDto, getLogger, IMap, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, PlayerAnswerLikedDto, PlayerChoseWinnerDto, SelectedPlayersDto } from "../util";
+import { BaseToDGameState, ChoseQuestionDto, CreatedDto, CreateDto, getLogger, JoinDto, JoinedDto, Maybe, PlayerAnsweredDto, PlayerAnswerLikedDto, PlayerChoseWinnerDto, SelectedPlayersDto } from "../util";
 import { BaseGameState } from "./baseGameState";
-import { DuoGameState } from "./duo/gameState";
+import { DuoGameState } from "./duo";
 import { gameManager } from "./gameManager";
 import { PartyGameState } from "./party";
 import { createPlayer, Player } from "./player";
 
-const logger = getLogger("partyclientSockets");
+const logger = getLogger("clientSockets");
 
 
-export const registerNewPartyClientConnection = (socket: Socket) => {
+export const registerNewClientConnection = (socket: Socket) => {
   logger.debug(`Setting up event handlers on new client socket. ${socket.id}`);
 
   let player: Maybe<Player> = null;

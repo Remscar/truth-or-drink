@@ -1,14 +1,13 @@
 import * as http from "http";
 import { Socket, Server as SocketServer } from "socket.io";
 import { getLogger } from "../util";
-import { registerNewPartyClientConnection } from "./party";
+import { registerNewClientConnection } from "./clientSockets";
 
 const logger = getLogger("serverSockets");
 
 let socketServer: SocketServer | undefined;
 
 const normalSocketPath = "/socket";
-const duoSocketPath = "/duosocket";
 
 export const initServerSockets = (server: http.Server) => {
   socketServer = new SocketServer({
@@ -17,7 +16,7 @@ export const initServerSockets = (server: http.Server) => {
   socketServer.listen(server);
   socketServer.on("connection", (socket: Socket) => {
     logger.log(`new socket connection`);
-    registerNewPartyClientConnection(socket);
+    registerNewClientConnection(socket);
   });
 };
 
