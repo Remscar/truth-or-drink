@@ -12,6 +12,7 @@ export const useSocket = (path = "/socket") => {
   const refreshSocket = () => {
     setRefreshSocket(shouldRefreshSocket + 1);
   }
+  
 
   const socket = React.useMemo(() => {
     const gameSocket = openSocket(host, { path });
@@ -22,6 +23,13 @@ export const useSocket = (path = "/socket") => {
     });
 
     return gameSocket;
+  }, []);
+  
+
+  React.useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
   }, [shouldRefreshSocket]);
 
   React.useEffect(() => {
@@ -41,7 +49,7 @@ export const useSocket = (path = "/socket") => {
     return () => {
       clearInterval(interval);
     }
-  }, [])
+  }, []);
 
   return socket;
 };

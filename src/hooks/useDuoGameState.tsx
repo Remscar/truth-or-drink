@@ -2,6 +2,7 @@ import React from "react";
 import { CouldError, getLogger, Maybe } from "../util";
 
 import {
+  BaseCompleteGameStateDto,
   ChoseQuestionDto,
   CompleteDuoGameStateDto,
   CompleteGameStateDto,
@@ -16,6 +17,7 @@ import {
   PlayerStartNextRound
 } from "../shared";
 import { useSocket } from "./useSocket";
+import { useGameSocket } from "./useGameSocket";
 
 // export * from "./useGameStateHelpers";
 
@@ -64,7 +66,7 @@ export const useRawDuoGameState = () => {
 };
 
 export const DuoGameStateContextProvider: React.FC = (props) => {
-  const gameSocket = useSocket();
+  const {gameSocket} = useGameSocket();
   const [currentGameState, setCurrentGameState] = React.useState<Maybe<DuoGameState>>(null);
   const [playerInfo, setPlayerInfo] = React.useState<Maybe<PlayerInfo>>(null);
 
@@ -80,7 +82,13 @@ export const DuoGameStateContextProvider: React.FC = (props) => {
       logger.debug("client connected");
     });
   
-    gameSocket.on("completeGameState", (data: CompleteGameStateDto) => {
+    gameSocket.on("completeGameState", (dto: BaseCompleteGameStateDto) => {
+      if (dto.type !== 'duo') {
+        logger.debug(`discarding state since it's of the wrong type.`);
+        return;
+      }
+
+      const data = dto as CompleteDuoGameStateDto;
   
       logger.log(`Received full state for ${data.gameCode}`);
       logger.debug(data);
@@ -93,6 +101,7 @@ export const DuoGameStateContextProvider: React.FC = (props) => {
   
       updateGameState(data);
     });
+
   }, [])
 
   
@@ -117,8 +126,9 @@ export const DuoGameStateContextProvider: React.FC = (props) => {
         );
 
         if (data.success && data.state) {
+          const state = data.state as DuoToDGameState;
           setPlayerInfo(player);
-          updateGameState(data.state);
+          updateGameState(state);
         }
 
         resolve({
@@ -134,13 +144,15 @@ export const DuoGameStateContextProvider: React.FC = (props) => {
 
     const socket = await getSocket();
     const dto: CreateDto = {
+      type: "duo",
       creator: player,
       decks
     };
     socket.emit("create", dto);
 
     return new Promise<string>((resolve) => {
-      socket.once("created", (data: CreatedDto) => {
+      socket.once("created", (dto: CreatedDto) => {
+        const data = dto.state as DuoToDGameState;
         logger.log(`Server created our game with code: ${data.gameCode}`);
         setPlayerInfo(player);
         updateGameState(data);

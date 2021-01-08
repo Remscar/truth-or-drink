@@ -59,7 +59,11 @@ export interface ToDGameState extends BaseToDGameState {
   winnerChosen: boolean;
 }
 
-export interface CompleteGameStateDto extends Dto, ToDGameState {
+export interface BaseCompleteGameStateDto extends Dto, BaseToDGameState {
+
+}
+
+export interface CompleteGameStateDto extends BaseCompleteGameStateDto, ToDGameState {
 }
 
 export interface DuoRound {
@@ -82,7 +86,7 @@ export interface DuoToDGameState extends BaseToDGameState {
   playerStates: IMap<PlayerGameState>;
 }
 
-export interface CompleteDuoGameStateDto extends Dto, DuoToDGameState {
+export interface CompleteDuoGameStateDto extends BaseCompleteGameStateDto, DuoToDGameState {
 
 }
 
