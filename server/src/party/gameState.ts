@@ -431,6 +431,10 @@ export class PartyGameState extends BaseGameState {
 
   public async beginScoring() {
     this._roundState = "scoring";
+
+    if (this._someoneSkippedAnswering) {
+      this.startEndScoringCountdown();
+    }
   }
 
   public async startEndScoringCountdown() {
